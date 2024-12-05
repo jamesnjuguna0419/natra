@@ -29,5 +29,5 @@ Gem::Specification.new do |spec|
   spec.require_paths = ['lib']
   spec.add_development_dependency 'bundler', '~> 2.0'
   spec.add_runtime_dependency('activesupport', '>= 5', '< 7')
-  spec.add_runtime_dependency('thor', '~> 0.18')
+  spec.add_runtime_dependency('thor', '>= 0.18', '< 2.0')
 end
