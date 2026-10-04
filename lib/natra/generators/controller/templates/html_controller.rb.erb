@@ -1,0 +1,34 @@
+class <%= class_name %> < ApplicationController
+  configure do
+    set :views, 'app/views'
+    set :default_content_type, :html
+  end
+
+  get '/<%= controller_name %>' do
+    erb :'<%= controller_name %>/index.html'
+  end
+
+  get '/<%= controller_name %>/new' do
+    erb :'<%= controller_name %>/new.html'
+  end
+
+  post '/<%= controller_name %>' do
+    redirect '/<%= controller_name %>'
+  end
+
+  get '/<%= controller_name %>/:id' do
+    erb :'<%= controller_name %>/show.html'
+  end
+
+  get '/<%= controller_name %>/:id/edit' do
+    erb :'<%= controller_name %>/edit.html'
+  end
+
+  patch '/<%= controller_name %>/:id' do
+    redirect "/<%= controller_name %>/#{params[:id]}"
+  end
+
+  delete '/<%= controller_name %>/:id' do
+    redirect '/<%= controller_name %>'
+  end
+end

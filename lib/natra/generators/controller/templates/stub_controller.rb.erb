@@ -1,0 +1,14 @@
+class <%= class_name %> < ApplicationController
+  # TODO: There is no <%= model_class %> model yet, so these routes are placeholders.
+  # Run `natra model <%= model_name %> field:type ...` and then
+  # rerun `natra controller <%= model_name %>` and let it overwrite this file with JSON CRUD routes,
+  # or write the routes yourself.
+
+  get '/<%= controller_name %>' do
+    json []
+  end
+
+  get '/<%= controller_name %>/:id' do
+    not_found
+  end
+end

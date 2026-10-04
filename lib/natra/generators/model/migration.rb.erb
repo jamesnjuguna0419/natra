@@ -1,6 +1,6 @@
 class <%= migration_class_name %> < ActiveRecord::Migration[8.1]
   def change
-    create_table :<%= table_name %> ,id: :uuid do |t|
+    create_table :<%= table_name %>, id: :uuid do |t|
 <% attributes.each do |attribute| -%>
       t.<%= attribute[:type] %> :<%= attribute[:name] %>
 <% end %>

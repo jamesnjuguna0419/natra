@@ -5,7 +5,7 @@
 [![Downloads](https://img.shields.io/gem/dt/natra.svg)](https://rubygems.org/gems/natra)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE.txt)
 
-Natra is a command line generator for small Sinatra services. `natra new` creates a JSON API skeleton with ActiveRecord, PostgreSQL, Puma, RSpec, RuboCop and a Docker setup. Inside that app, `natra model`, `natra controller`, `natra scaffold` and `natra service_object` add models with migrations, controllers with views, and plain Ruby service objects.
+Natra is a command line generator for small Sinatra services. `natra new` creates a JSON API skeleton with ActiveRecord, PostgreSQL, Puma, RSpec, RuboCop, a `/health` endpoint and a Docker setup. Inside that app, `natra model`, `natra controller`, `natra scaffold` and `natra service_object` add models with migrations, JSON CRUD controllers with request specs, and plain Ruby service objects. HTML views are available with `--views`.
 
 ## Requirements
 
@@ -47,14 +47,84 @@ bundle exec puma -C config/puma.rb
 
 Either way the app listens on http://localhost:9292. Run its specs with `bundle exec rspec` after `RACK_ENV=test bundle exec rake db:create db:migrate`.
 
+### Add a resource
+
+```sh
+natra scaffold post title:string body:text
+bundle exec rake db:migrate
+```
+
+Restart Puma, then:
+
+```sh
+$ curl -s -X POST localhost:9292/posts -H 'Content-Type: application/json' \
+    -d '{"title":"Hello","body":"First post"}'
+{"id":"a43585d4-9b1e-4bb5-96b3-966edc9566e0","title":"Hello","body":"First post","created_at":"2026-10-04T19:26:10.670Z","updated_at":"2026-10-04T19:26:10.670Z"}
+
+$ curl -s localhost:9292/posts
+[{"id":"a43585d4-9b1e-4bb5-96b3-966edc9566e0","title":"Hello","body":"First post",...}]
+
+$ curl -s -X PATCH localhost:9292/posts/a43585d4-9b1e-4bb5-96b3-966edc9566e0 \
+    -H 'Content-Type: application/json' -d '{"title":"Hello again"}'
+{"id":"a43585d4-9b1e-4bb5-96b3-966edc9566e0","title":"Hello again",...}
+
+$ curl -s -o /dev/null -w '%{http_code}\n' -X DELETE localhost:9292/posts/a43585d4-9b1e-4bb5-96b3-966edc9566e0
+204
+```
+
+## The generated API
+
+Every response is JSON. The generated `ApplicationController` sets the content type, provides the `json(object, status = 200)` and `json_params` helpers, and turns errors into JSON responses:
+
+| Status | When | Body |
+| --- | --- | --- |
+| 400 | The request body is not valid JSON, or not a JSON object | `{"error":"Invalid JSON"}` |
+| 404 | Unknown route, or `ActiveRecord::RecordNotFound` | `{"error":"Not found"}` |
+| 422 | `ActiveRecord::RecordInvalid`, for example a failed `validates` | `{"errors":{"title":["can't be blank"]}}` |
+| 500 | Any other error | `{"error":"Internal server error"}`, plus the exception message in development only. The backtrace goes to the log, never to the client. |
+
+`natra scaffold post title:string body:text` generates these routes:
+
+| Route | Success | Errors |
+| --- | --- | --- |
+| `GET /posts` | 200, a JSON array ordered by `created_at` | |
+| `GET /posts/:id` | 200, the record | 404 |
+| `POST /posts` | 201, the created record | 400, 422 |
+| `PATCH /posts/:id` | 200, the updated record | 400, 404, 422 |
+| `DELETE /posts/:id` | 204, no body | 404 |
+
+Create and update read the JSON request body and only accept the scaffold's fields (`title` and `body` here), so other keys such as `id` are ignored. `natra controller NAME` generates the same routes when `app/models/NAME.rb` exists, accepting the fields you pass (`natra controller post title body`) or, without fields, the model's columns other than `id`, `created_at` and `updated_at`. Without a model it generates a stub controller with a `GET` index and show and a TODO; generate the model, then run `natra controller NAME` again and let it overwrite the stub.
+
+### Health check
+
+`GET /health` runs `SELECT 1` against the database:
+
+```sh
+$ curl -s localhost:9292/health
+{"status":"ok","database":"ok"}
+```
+
+If the database cannot be reached it returns 503 with `{"status":"error","database":"unavailable"}`. The Dockerfile has a `HEALTHCHECK` that calls it with curl, and `docker-compose.yml` health-checks both containers and starts `web` only once PostgreSQL is healthy. `GET /` returns the app name, such as `{"name":"MyApi","status":"ok"}`.
+
+### Request specs
+
+`natra new` writes `spec/requests/application_spec.rb`, which covers `/`, `/health` (including the 503) and unknown routes. `natra scaffold` writes `spec/requests/posts_spec.rb`, which checks every route above with its success and error statuses, using sample values for the fields. The specs use rack-test against `config.ru`, and `spec/spec_helper.rb` wraps each example in a transaction with database_cleaner-active_record and provides `json_body` and `json_request(method, path, payload)`.
+
+### HTML views
+
+The default output is JSON only. To render HTML with erb instead:
+
+- `natra new APP_PATH --views` adds `app/views/layout.erb`, `app/views/welcome.erb` and `public/favicon.ico`, and serves the welcome page at `GET /`.
+- `natra controller NAME --views` and `natra scaffold NAME --views` generate HTML routes (index, new, create, show, edit, update and delete, with placeholder views and redirects) instead of the JSON controller, and no request spec.
+
 ## Commands
 
 | Command | What it does | Options |
 | --- | --- | --- |
-| `natra new APP_PATH` | Creates a new Sinatra application in `APP_PATH` | `--git` runs `git init` and `git add .`<br>`--bundle` runs `bundle install`<br>`--redis` adds the redis gem, `config/redis.yml` and a Redis initializer<br>`--capistrano` runs `cap install`<br>`--rvm` writes `.ruby-version` (the Ruby running natra) and `.ruby-gemset`, and skips `--bundle` |
+| `natra new APP_PATH` | Creates a new Sinatra application in `APP_PATH` | `--views` adds an HTML layout, welcome page and `public/`<br>`--git` runs `git init` and `git add .`<br>`--bundle` runs `bundle install`<br>`--redis` adds the redis gem, `config/redis.yml` and a Redis initializer<br>`--capistrano` runs `cap install`<br>`--rvm` writes `.ruby-version` (the Ruby running natra) and `.ruby-gemset`, and skips `--bundle` |
 | `natra model NAME [field:type ...]` | Generates a model and a migration that creates its table | `--no-migration` skips the migration |
-| `natra controller NAME` | Generates a controller with routes, mounts it in `config.ru` and adds its views | `--no-views` skips the views |
-| `natra scaffold NAME [field:type ...]` | Runs `model` and `controller` for `NAME` | |
+| `natra controller NAME [field ...]` | Generates a JSON controller and mounts it in `config.ru`: CRUD routes if the model exists, otherwise a stub | `--views` generates HTML routes and erb views instead |
+| `natra scaffold NAME [field:type ...]` | Runs `model` and `controller` for `NAME` and writes a request spec | `--views` generates HTML routes and erb views instead, without a request spec<br>`--no-migration` skips the migration |
 | `natra service_object NAME` | Generates a service object in `app/services` | |
 | `natra -v`, `natra --version` | Prints the natra version | |
 | `natra help [COMMAND]` | Lists the commands, or describes one | |
@@ -87,10 +157,7 @@ blog/
 ├── app/
 │   ├── controllers/application_controller.rb
 │   ├── models/
-│   ├── services/
-│   └── views/
-│       ├── layout.erb
-│       └── welcome.erb
+│   └── services/
 ├── bin/setup
 ├── config/
 │   ├── database.yml
@@ -101,25 +168,21 @@ blog/
 │   ├── migrate/YYYYMMDD0000_add_extensions.rb
 │   └── seeds.rb
 ├── lib/
-├── public/favicon.ico
 └── spec/
-    ├── application_controller_spec.rb
+    ├── requests/application_spec.rb
     ├── spec_helper.rb
     └── support/
 ```
 
-The Gemfile uses Sinatra 4, ActiveRecord 8.1 through sinatra-activerecord, pg, Puma, Oj, rack-timeout and Scout APM, with RSpec, Capybara, FactoryBot, Faker, DatabaseCleaner, SimpleCov and Guard for tests. The first migration enables the `hstore`, `uuid-ossp` and `pgcrypto` PostgreSQL extensions. The Rakefile loads the sinatra-activerecord tasks, such as `db:create`, `db:migrate`, `db:seed` and `db:create_migration`.
+The Gemfile uses Sinatra 4, ActiveRecord 8.1 through sinatra-activerecord, pg, Puma, Oj, rack-timeout and Scout APM, with RSpec, rack-test, FactoryBot, Faker, DatabaseCleaner, SimpleCov and Guard for tests. The first migration enables the `hstore`, `uuid-ossp` and `pgcrypto` PostgreSQL extensions. The Rakefile loads the sinatra-activerecord tasks, such as `db:create`, `db:migrate`, `db:seed` and `db:create_migration`. `rake db:seed` loads `db/seeds.rb`, which is plain Ruby, and `bin/setup` runs it after migrating.
 
 `natra scaffold post title:string body:text` then creates:
 
 ```
 app/models/post.rb                          # class Post < ActiveRecord::Base
 db/migrate/YYYYMMDDHHMMSS_create_posts.rb   # posts table with a UUID id, title, body and timestamps
-app/controllers/posts_controller.rb         # index, new, create, show, edit, update and delete routes
-app/views/posts/index.html.erb
-app/views/posts/new.html.erb
-app/views/posts/show.html.erb
-app/views/posts/edit.html.erb
+app/controllers/posts_controller.rb         # JSON index, show, create, update and delete routes
+spec/requests/posts_spec.rb                 # request specs for every route and status
 ```
 
 It also adds `use PostsController` to `config.ru`.

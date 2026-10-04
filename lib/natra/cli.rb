@@ -15,7 +15,7 @@ module Natra
     register Natra::Generators::ModelGenerator, 'model', 'model NAME', 'Generate a model'
     register Natra::Generators::ControllerGenerator, 'controller', 'controller NAME', 'Generate a controller'
     register Natra::Generators::ScaffoldGenerator, 'scaffold', 'scaffold NAME',
-             'Generate a model with its associated views and controllers'
+             'Generate a model with its JSON CRUD controller'
     register Natra::Generators::ServiceGenerator, 'service_object', 'service_object NAME', 'Generate a service object'
 
     def self.exit_on_failure?
