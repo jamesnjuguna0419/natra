@@ -11,7 +11,7 @@ Gem::Specification.new do |spec|
   spec.email         = ['jamesnjuguna0419@gmail.com']
 
   spec.summary       = 'Natra generates lightweight Sinatra applications'
-  spec.required_ruby_version = '>= 3.3'
+  spec.required_ruby_version = '>= 3.0'
   spec.description   = 'Natra generates lightweight Sinatra applications, ideal for containerized ' \
                        'API services with a PostgreSQL database.'
   spec.homepage      = 'https://github.com/jamesnjuguna0419/natra'

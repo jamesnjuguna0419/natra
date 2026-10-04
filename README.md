@@ -9,7 +9,7 @@ Natra is a command line generator for small Sinatra services. `natra new` create
 
 ## Requirements
 
-- Ruby 3.3 or newer to run natra and the apps it generates.
+- Ruby 3.0 or newer to run natra and the apps it generates. Apps generated on Ruby 3.2 or newer use ActiveRecord 8.1; on Ruby 3.0 and 3.1 they use ActiveRecord 7.1, pg 1.6 and redis 5.4, the newest releases that support those Rubies.
 - PostgreSQL for the generated app's database.
 - Docker with Compose v2, only if you want the generated Docker setup. `natra new` runs `docker compose build --pull` as its last step. Without Docker that step prints an error, but the app is still generated and you can run it locally.
 
@@ -174,7 +174,7 @@ blog/
     └── support/
 ```
 
-The Gemfile uses Sinatra 4, ActiveRecord 8.1 through sinatra-activerecord, pg, Puma, Oj, rack-timeout and Scout APM, with RSpec, rack-test, FactoryBot, Faker, DatabaseCleaner, SimpleCov and Guard for tests. The first migration enables the `hstore`, `uuid-ossp` and `pgcrypto` PostgreSQL extensions. The Rakefile loads the sinatra-activerecord tasks, such as `db:create`, `db:migrate`, `db:seed` and `db:create_migration`. `rake db:seed` loads `db/seeds.rb`, which is plain Ruby, and `bin/setup` runs it after migrating.
+The Gemfile uses Sinatra 4, ActiveRecord (8.1, or 7.1 on Ruby 3.0 and 3.1) through sinatra-activerecord, pg, Puma, Oj, rack-timeout and Scout APM, with RSpec, rack-test, FactoryBot, Faker, DatabaseCleaner, SimpleCov and Guard for tests. The first migration enables the `hstore`, `uuid-ossp` and `pgcrypto` PostgreSQL extensions. The Rakefile loads the sinatra-activerecord tasks, such as `db:create`, `db:migrate`, `db:seed` and `db:create_migration`. `rake db:seed` loads `db/seeds.rb`, which is plain Ruby, and `bin/setup` runs it after migrating.
 
 `natra scaffold post title:string body:text` then creates:
 
@@ -189,7 +189,7 @@ It also adds `use PostsController` to `config.ru`.
 
 ## Development
 
-Natra is developed on Ruby 3.3.10 (see `.ruby-version`). CI runs on Ruby 3.3, 3.4.3, 3.4.8, 3.4.9 and the latest 3.4.
+Natra is developed on Ruby 3.3.10 (see `.ruby-version`). CI runs on Ruby 3.0, 3.1, 3.2, 3.3, 3.4.3, 3.4.8, 3.4.9 and the latest 3.4.
 
 ```sh
 bin/setup                    # install dependencies

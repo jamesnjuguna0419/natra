@@ -1,17 +1,17 @@
 # frozen_string_literal: true
 
 source 'https://rubygems.org'
-ruby '~> 3.3'
+ruby '~> <%= Natra::Versions.ruby_minor %>'
 
-gem 'activerecord', '~> 8.1'
+gem 'activerecord', '~> <%= Natra::Versions.activerecord %>'
 gem 'bcrypt', '~> 3.1'
 gem 'oj', '~> 3.17'
-gem 'pg', '~> 1.7'
+gem 'pg', '~> <%= Natra::Versions.pg %>'
 gem 'puma', '~> 8.0'
 gem 'rack-timeout', '~> 0.7'
 gem 'rake', '~> 13.0'
 <% if @redis -%>
-gem 'redis', '~> 6.0'
+gem 'redis', '~> <%= Natra::Versions.redis %>'
 <% end -%>
 gem 'require_all', '~> 3.0'
 gem 'scout_apm', '~> 6.0'

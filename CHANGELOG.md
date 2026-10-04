@@ -21,9 +21,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `natra new --views` generates the HTML layout, welcome page and `public/favicon.ico`, and serves the welcome page at `GET /`.
 - `natra scaffold` accepts `--views` and `--no-migration` and passes them to the controller and model generators.
 
+### Fixed
+
+- The generated `/health` check uses `ActiveRecord::Base.connection_pool.with_connection`, which works on ActiveRecord 7.1 as well as 8.1.
+- The generated `spec/spec_helper.rb` loads translations before the first request. Faker's locale files take seconds to parse and could push the first request that needed a translation past `Rack::Timeout`.
+
 ### Changed
 
-- CI tests Ruby 3.4.3, 3.4.8 and 3.4.9 explicitly, alongside 3.3 and the latest 3.4.
+- natra supports all of Ruby 3: it requires Ruby 3.0 or newer (was 3.3). Generated apps follow the Ruby running natra: `ruby '~> 3.x'` in the Gemfile, a `ruby:3.x-slim` Docker image and RuboCop's `TargetRubyVersion`. On Ruby 3.2 and newer they keep ActiveRecord 8.1, pg 1.7 and redis 6; on Ruby 3.0 and 3.1 they get ActiveRecord 7.1, pg 1.6 and redis 5.4.
+- `natra model` takes the migration version from the app's Gemfile, so an app generated on Ruby 3.0 keeps `Migration[7.1]` even when natra later runs on a newer Ruby.
+- CI runs on Ruby 3.0, 3.1, 3.2, 3.3, 3.4.3, 3.4.8, 3.4.9 and the latest 3.4.
 - The HTML controller generated with `--views` routes `DELETE /posts/:id` instead of `DELETE /posts/:id/delete`, and `PATCH` redirects to the record instead of the literal path `/posts/:id`.
 - Generated migrations write `create_table :posts, id: :uuid` without a space before the comma, and the generated RuboCop config skips `db/schema.rb`, so a freshly scaffolded app passes RuboCop.
 - The development Gemfile no longer pins `parallel` below 2, which was only needed for Ruby 3.2. parallel is now 2.3.0.

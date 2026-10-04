@@ -1,4 +1,4 @@
-class <%= migration_class_name %> < ActiveRecord::Migration[8.1]
+class <%= migration_class_name %> < ActiveRecord::Migration[<%= migration_version %>]
   def change
     create_table :<%= table_name %>, id: :uuid do |t|
 <% attributes.each do |attribute| -%>

@@ -24,7 +24,8 @@ RSpec.describe ApplicationController do
   end
 
   it 'returns 503 when the database is unavailable' do
-    allow(ActiveRecord::Base).to receive(:with_connection).and_raise(ActiveRecord::ConnectionNotEstablished)
+    pool = ActiveRecord::Base.connection_pool
+    allow(pool).to receive(:with_connection).and_raise(ActiveRecord::ConnectionNotEstablished)
     get '/health'
     expect(last_response.status).to eq(503)
     expect(json_body).to eq('status' => 'error', 'database' => 'unavailable')

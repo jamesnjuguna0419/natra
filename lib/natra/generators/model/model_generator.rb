@@ -58,6 +58,14 @@ module Natra
           template 'migration.rb.erb', File.join('db/migrate', migration_file_name)
         end
       end
+
+      private
+
+      # Matches the app's own ActiveRecord, which may differ from the Ruby running natra now.
+      def migration_version
+        gemfile = File.exist?('Gemfile') ? File.read('Gemfile') : ''
+        gemfile[/gem 'activerecord', '~> (\d+\.\d+)'/, 1] || Natra::Versions.activerecord
+      end
     end
   end
 end

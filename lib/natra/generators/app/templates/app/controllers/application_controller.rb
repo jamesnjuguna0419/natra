@@ -88,7 +88,7 @@ class ApplicationController < Sinatra::Base
   end
 
   def database_available?
-    ActiveRecord::Base.with_connection { |connection| connection.select_value('SELECT 1') }
+    ActiveRecord::Base.connection_pool.with_connection { |connection| connection.select_value('SELECT 1') }
     true
   rescue StandardError
     false

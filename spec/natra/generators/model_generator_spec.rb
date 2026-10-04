@@ -18,10 +18,18 @@ RSpec.describe Natra::Generators::ModelGenerator, 'natra model' do
     run_cli('model', 'post', 'title', 'body:text', 'views:integer')
 
     migration = read('db/migrate/20261004153007_create_posts.rb')
-    expect(migration).to include('class CreatePosts < ActiveRecord::Migration[8.1]', 'create_table :posts, id: :uuid')
+    expect(migration).to include("class CreatePosts < ActiveRecord::Migration[#{Natra::Versions.activerecord}]")
+    expect(migration).to include('create_table :posts, id: :uuid')
     columns = migration.scan(/^\s+t\.\w+ :\w+$/).map(&:strip)
     expect(columns).to eq(['t.string :title', 't.text :body', 't.integer :views'])
     expect(migration).to include('t.timestamps null: false')
+  end
+
+  it "uses the ActiveRecord version from the app's Gemfile" do
+    File.write('Gemfile', "gem 'activerecord', '~> 7.1'\n")
+    run_cli('model', 'post')
+
+    expect(read('db/migrate/20261004153007_create_posts.rb')).to include('ActiveRecord::Migration[7.1]')
   end
 
   it 'skips the migration with --no-migration' do

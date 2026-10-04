@@ -12,6 +12,10 @@ ActiveRecord::Migration.check_all_pending!
 
 ActiveRecord::Base.logger = nil
 
+# Faker's locale files take seconds to parse. Load them now so the first request
+# that needs a translation does not run into Rack::Timeout.
+I18n.backend.eager_load!
+
 APP = Rack::Builder.parse_file(File.expand_path('../config.ru', __dir__))
 
 module RequestHelpers

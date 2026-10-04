@@ -1,4 +1,4 @@
-FROM ruby:3.3-slim AS base
+FROM ruby:<%= Natra::Versions.ruby_minor %>-slim AS base
 
 # build-essential compiles native gems (bcrypt, oj, puma); libpq-dev is needed by pg; curl runs the healthcheck.
 RUN apt-get update -qq \

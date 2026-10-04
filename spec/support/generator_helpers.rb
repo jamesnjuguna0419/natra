@@ -7,8 +7,8 @@ require 'tmpdir'
 # Helpers for running natra generators in a throwaway directory.
 module GeneratorHelpers
   # Runs the example inside a fresh temp directory and removes it afterwards.
-  def within_tmpdir(&)
-    Dir.mktmpdir('natra-spec') { |dir| Dir.chdir(dir, &) }
+  def within_tmpdir(&block)
+    Dir.mktmpdir('natra-spec') { |dir| Dir.chdir(dir, &block) }
   end
 
   # Invokes the CLI the same way bin/natra does and returns what it printed.

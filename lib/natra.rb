@@ -7,6 +7,7 @@ require 'natra/generators/scaffold/scaffold_generator'
 require 'natra/generators/controller/controller_generator'
 require 'natra/generators/service/service_generator'
 require 'natra/version'
+require 'natra/versions'
 require 'natra/cli'
 
 # The top-level namespace for the Natra framework.

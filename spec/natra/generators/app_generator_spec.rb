@@ -49,12 +49,14 @@ RSpec.describe Natra::Generators::AppGenerator, 'rendered templates' do
     expect(secrets).to include('DATABASE_URL=postgresql://docker:docker@db:5432/development_my_blog?pool=5')
   end
 
-  it 'targets Ruby 3.3 with current gems and no coveralls or tux' do
+  it 'targets the Ruby running natra with gems that support it and no coveralls or tux' do
+    ruby = Natra::Versions.ruby_minor
     gemfile = read('my-blog/Gemfile')
-    expect(gemfile).to include("ruby '~> 3.3'", "gem 'pg', '~> 1.7'", "gem 'sinatra', '~> 4.1'", "gem 'simplecov'")
-    expect(gemfile).to include("gem 'puma', '~> 8.0'", "gem 'oj', '~> 3.17'")
+    expect(gemfile).to include("ruby '~> #{ruby}'", "gem 'pg', '~> #{Natra::Versions.pg}'", "gem 'sinatra', '~> 4.1'")
+    expect(gemfile).to include("gem 'puma', '~> 8.0'", "gem 'oj', '~> 3.17'", "gem 'simplecov'")
     expect(gemfile).not_to match(/coveralls|tux|capybara|seed-fu/)
-    expect(read('my-blog/Dockerfile')).to start_with('FROM ruby:3.3-slim').and include('libpq-dev')
+    expect(read('my-blog/Dockerfile')).to start_with("FROM ruby:#{ruby}-slim").and include('libpq-dev')
+    expect(read('my-blog/.rubocop.yml')).to include("TargetRubyVersion: #{ruby}")
   end
 
   it 'reads database names from the environment with defaults named after the app' do
@@ -69,8 +71,9 @@ RSpec.describe Natra::Generators::AppGenerator, 'rendered templates' do
 
   it 'pins migrations to the ActiveRecord version in the Gemfile' do
     migration = Dir.glob('my-blog/db/migrate/*_add_extensions.rb').first
-    expect(read(migration)).to include('ActiveRecord::Migration[8.1]')
-    expect(read('my-blog/Gemfile')).to include("gem 'activerecord', '~> 8.1'")
+    activerecord = Natra::Versions.activerecord
+    expect(read(migration)).to include("ActiveRecord::Migration[#{activerecord}]")
+    expect(read('my-blog/Gemfile')).to include("gem 'activerecord', '~> #{activerecord}'")
   end
 
   it 'writes a plain db/seeds.rb for rake db:seed' do
@@ -171,7 +174,7 @@ RSpec.describe Natra::Generators::AppGenerator, 'optional files' do
 
     expect(read('blog/config/redis.yml')).to eq(read(File.join(described_class.source_root, 'config/redis.yml')))
     expect(read('blog/config/initializers/redis.rb')).to include('REDIS = Redis.new')
-    expect(read('blog/Gemfile')).to include("gem 'redis', '~> 6.0'\n")
+    expect(read('blog/Gemfile')).to include("gem 'redis', '~> #{Natra::Versions.redis}'\n")
   end
 
   it 'adds the HTML layout, welcome page and public directory with --views' do

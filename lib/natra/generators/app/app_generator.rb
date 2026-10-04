@@ -12,7 +12,7 @@ module Natra
       argument :name, type: :string, desc: 'The name of the new application'
       class_option :capistrano, type: :boolean, desc: 'Include Capistrano configuration'
       class_option :redis, type: :boolean, desc: 'Include Redis configuration'
-      class_option :rvm, type: :boolean, desc: 'Create .ruby-version (the Ruby running natra, 3.3+) and .ruby-gemset'
+      class_option :rvm, type: :boolean, desc: 'Create .ruby-version (the Ruby running natra) and .ruby-gemset'
       class_option :bundle, type: :boolean, desc: 'Run bundle after generating the app'
       class_option :git, type: :boolean, desc: 'Initialize a Git repository'
       class_option :views, type: :boolean, default: false,
@@ -113,11 +113,11 @@ module Natra
       end
 
       def create_rubocop
-        copy_file 'rubocop.yml', File.join(@app_path, '.rubocop.yml')
+        template 'rubocop.yml', File.join(@app_path, '.rubocop.yml')
       end
 
       def create_docker
-        copy_file 'Dockerfile', File.join(@app_path, 'Dockerfile')
+        template 'Dockerfile', File.join(@app_path, 'Dockerfile')
       end
 
       def create_docker_compose
