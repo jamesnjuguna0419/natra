@@ -52,6 +52,7 @@ RSpec.describe Natra::Generators::AppGenerator, 'rendered templates' do
   it 'targets Ruby 3.3 with current gems and no coveralls or tux' do
     gemfile = read('my-blog/Gemfile')
     expect(gemfile).to include("ruby '~> 3.3'", "gem 'pg', '~> 1.5'", "gem 'sinatra', '~> 4.1'", "gem 'simplecov'")
+    expect(gemfile).to include("gem 'puma', '~> 8.0'")
     expect(gemfile).not_to match(/coveralls|tux/)
     expect(read('my-blog/Dockerfile')).to start_with('FROM ruby:3.3-slim').and include('libpq-dev')
   end
