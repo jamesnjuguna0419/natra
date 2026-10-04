@@ -28,6 +28,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - The development Gemfile no longer pins `parallel` below 2, which was only needed for Ruby 3.2. parallel is now 2.3.0.
 - `natra new --redis` adds `gem 'redis', '~> 6.0'` (was `~> 5.0`). redis 6 talks RESP3 by default; the generated `config/redis.yml` and initializer work unchanged.
 - Generated apps pin `gem 'puma', '~> 8.0'` (was `>= 6.4`). The generated `config/puma.rb` is unchanged and runs on Puma 8.
+- Generated apps pin `gem 'pg', '~> 1.7'` (was `~> 1.5`) and `gem 'oj', '~> 3.17'` (was `~> 3.16`).
 
 ## [2.0.0] - 2026-10-04
 
