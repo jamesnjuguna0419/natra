@@ -1,5 +1,7 @@
 # frozen_string_literal: true
 
+require 'yaml'
+
 RSpec.describe Natra::Generators::AppGenerator, 'natra new' do
   include_context 'in a temp dir'
   include_context 'with stubbed shell commands'
@@ -71,6 +73,28 @@ RSpec.describe Natra::Generators::AppGenerator, 'rendered templates' do
 
   it 'titles the README with the app name' do
     expect(read('my-blog/README.md')).to start_with("# my_blog service\n")
+  end
+
+  it 'writes a JSON application controller with a health check named after the app' do
+    controller = read('my-blog/app/controllers/application_controller.rb')
+    expect(controller).to include('set :default_content_type, :json', "json(name: 'MyBlog', status: 'ok')")
+    expect(controller).to include("get '/health' do", "connection.select_value('SELECT 1')")
+    expect(controller).to include('error ActiveRecord::RecordNotFound', 'error ActiveRecord::RecordInvalid',
+                                  'error Sinatra::BadRequest', 'def json(object, code = 200)', 'def json_params')
+    expect(controller).not_to include('erb ')
+  end
+
+  it 'checks the health endpoint from Docker and waits for a healthy database' do
+    expect(read('my-blog/Dockerfile')).to include('curl', 'HEALTHCHECK', 'http://localhost:${PORT:-9292}/health')
+    compose = YAML.safe_load(read('my-blog/docker-compose.yml'))
+    expect(compose.dig('services', 'web', 'depends_on')).to eq('db' => { 'condition' => 'service_healthy' })
+    expect(compose.dig('services', 'web', 'healthcheck', 'test')).to include('http://localhost:9292/health')
+    expect(compose.dig('services', 'db', 'healthcheck', 'test').last).to include('pg_isready')
+  end
+
+  it 'specs the root and health endpoints' do
+    spec = read('my-blog/spec/application_controller_spec.rb')
+    expect(spec).to include("get '/health'", "'name' => 'MyBlog'", 'eq(503)')
   end
 end
 

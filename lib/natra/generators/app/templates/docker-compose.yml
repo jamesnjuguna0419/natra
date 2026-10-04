@@ -9,10 +9,22 @@ services:
     ports:
       - '9292:9292'
     depends_on:
-      - db
+      db:
+        condition: service_healthy
     env_file: secrets.env
+    healthcheck:
+      test: ['CMD', 'curl', '-fsS', 'http://localhost:9292/health']
+      interval: 10s
+      timeout: 3s
+      retries: 5
+      start_period: 15s
   db:
     image: postgres:17-alpine
     ports:
-      - "54329:5432"
+      - '54329:5432'
     env_file: secrets.env
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U "$$POSTGRES_USER" -d "$$POSTGRES_DB"']
+      interval: 5s
+      timeout: 3s
+      retries: 10

@@ -52,7 +52,9 @@ module Natra
       end
 
       def create_app_directory
-        %w[app/controllers app/views app/models].each { |dir| directory dir, File.join(@app_path, dir) }
+        template 'app/controllers/application_controller.rb',
+                 File.join(@app_path, 'app/controllers/application_controller.rb')
+        %w[app/views app/models].each { |dir| directory dir, File.join(@app_path, dir) }
       end
 
       def create_app_spec
