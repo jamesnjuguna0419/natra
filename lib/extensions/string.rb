@@ -2,6 +2,7 @@
 
 module Natra
   module Extensions
+    # Naming helpers mixed into String for turning user input into Ruby names.
     module String
       def camel_case
         return gsub(/^./, &:capitalize) unless match(/[_-]/)
@@ -16,11 +17,11 @@ module Natra
       end
 
       def directory_name
-        downcase.gsub(/[^a-z|\-|\_]/, '')
+        downcase.gsub(/[^a-z|_-]/, '')
       end
 
       def file_name
-        gsub(/[\-| ]/, '_')
+        gsub(/[-| ]/, '_')
           .gsub(/([A-Z]+|[A-Z][a-z])/) { |x| "_#{x}" }
           .sub(/^_/, '')
           .gsub(/_{2,}+/, '_')
@@ -34,4 +35,4 @@ module Natra
   end
 end
 
-String.send(:include, Natra::Extensions::String)
+String.include(Natra::Extensions::String)
