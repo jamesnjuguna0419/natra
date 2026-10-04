@@ -1,14 +1,21 @@
 # frozen_string_literal: true
 
-require_relative '../spec_helper'
-require_relative '../../lib/natra'
-RSpec.describe Natra::VERSION do
-  subject { Natra::Generators::AppGenerator }
-  describe 'source_root' do
-    it 'should return with a full path' do
-      pwd           = File.dirname(__FILE__)
-      template_path = pwd.sub 'spec/natra', 'lib/natra/generators/app/templates'
-      expect(subject.source_root).to eq(template_path)
+RSpec.describe Natra::CLI, 'version' do
+  it 'prints the version for -v and --version' do
+    expect(run_cli('-v')).to eq("Natra #{Natra::VERSION}\n")
+    expect(run_cli('--version')).to eq("Natra #{Natra::VERSION}\n")
+  end
+end
+
+RSpec.describe Natra::CLI, 'help' do
+  it 'lists every command' do
+    help = run_cli('help')
+    ['-v', 'new APP_PATH', 'model NAME', 'controller NAME', 'scaffold NAME', 'service_object NAME'].each do |usage|
+      expect(help).to include(" #{usage} ")
     end
+  end
+
+  it 'describes a single command' do
+    expect(run_cli('help', 'scaffold')).to include('scaffold NAME', 'Generate a model with its associated views')
   end
 end
