@@ -3,8 +3,10 @@
 require 'thor/group'
 module Natra
   module Generators
+    # Generates a new Sinatra application skeleton (natra new).
     class AppGenerator < Thor::Group
       include Thor::Actions
+
       desc 'Creates a new Sinatra application'
       argument :name, type: :string, desc: 'The name of the new application'
       class_option :capistrano, type: :boolean, desc: 'Include Capistrano configuration'
@@ -16,7 +18,7 @@ module Natra
       def setup
         @app_path = name.directory_name
         @name     = name.file_name
-        options.each { |key, value| instance_variable_set "@#{key}".to_sym, value }
+        options.each { |key, value| instance_variable_set :"@#{key}", value }
       end
 
       def self.source_root
@@ -39,7 +41,8 @@ module Natra
       end
 
       def uuid_setup
-        template 'db/migrate/add_extensions.rb', File.join(@app_path, "db/migrate/#{Time.now.strftime('%Y%m%d')}0000_add_extensions.rb")
+        template 'db/migrate/add_extensions.rb',
+                 File.join(@app_path, "db/migrate/#{Time.now.strftime('%Y%m%d')}0000_add_extensions.rb")
       end
 
       def create_public_directory
@@ -123,13 +126,13 @@ module Natra
       end
 
       def create_rvm_gemset
-        if @rvm
-          create_file(File.join(@app_path, '.ruby-version'), 'ruby-2.5.3')
-          create_file(File.join(@app_path, '.ruby-gemset'), @app_path)
+        return unless @rvm
 
-          @bundle = false
-          puts "You need to run 'bundle install' manually."
-        end
+        create_file(File.join(@app_path, '.ruby-version'), 'ruby-2.5.3')
+        create_file(File.join(@app_path, '.ruby-gemset'), @app_path)
+
+        @bundle = false
+        puts "You need to run 'bundle install' manually."
       end
 
       def initialize_git_repo

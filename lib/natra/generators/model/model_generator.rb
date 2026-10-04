@@ -4,8 +4,10 @@ require 'thor/group'
 require 'active_support/inflector'
 module Natra
   module Generators
+    # Generates an ActiveRecord model and its migration (natra model).
     class ModelGenerator < Thor::Group
       include Thor::Actions
+
       attr_reader :file_name, :class_name, :model_name, :migration_name, :migration_class_name, :table_name
 
       desc 'Generate an ActiveRecord model'
@@ -34,7 +36,8 @@ module Natra
 
       def create_model
         unless model_name == name
-          say "[WARNING] The model name '#{name}' was recognized as a plural, using the singular '#{model_name}' instead."
+          say "[WARNING] The model name '#{name}' was recognized as a plural, " \
+              "using the singular '#{model_name}' instead."
         end
 
         template 'model.rb.erb', File.join('app/models', "#{file_name}.rb")
@@ -45,7 +48,8 @@ module Natra
 
         migration_files = Dir.entries('db/migrate').reject { |path| File.directory? path }
 
-        if duplicate = migration_files.find { |file| file.include?(migration_name) }
+        duplicate = migration_files.find { |file| file.include?(migration_name) }
+        if duplicate
           say_status :identical, "db/migrate/#{duplicate}", :blue
         else
           version = Time.now.utc.strftime('%Y%m%d%H%M%S')

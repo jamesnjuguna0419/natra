@@ -1,9 +1,17 @@
 # frozen_string_literal: true
 
+require 'simplecov'
+SimpleCov.start do
+  skip '/spec/'
+  enable_coverage :branch
+  minimum_coverage line: 100, branch: 100 if ENV['CI']
+end
+
 require 'bundler/setup'
 require 'natra'
-require 'coveralls'
-Coveralls.wear!
+
+Dir[File.join(__dir__, 'support', '**', '*.rb')].each { |file| require file }
+
 RSpec.configure do |config|
   # Enable flags like --only-failures and --next-failure
   config.example_status_persistence_file_path = '.rspec_status'
