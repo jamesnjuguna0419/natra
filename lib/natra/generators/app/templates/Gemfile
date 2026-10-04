@@ -11,7 +11,7 @@ gem 'puma', '>= 6.4'
 gem 'rack-timeout', '~> 0.7'
 gem 'rake', '~> 13.0'
 <% if @redis -%>
-gem 'redis', '~> 5.0'
+gem 'redis', '~> 6.0'
 <% end -%>
 gem 'require_all', '~> 3.0'
 gem 'scout_apm', '~> 6.0'

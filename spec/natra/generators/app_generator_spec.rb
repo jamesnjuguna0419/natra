@@ -164,7 +164,7 @@ RSpec.describe Natra::Generators::AppGenerator, 'optional files' do
 
     expect(read('blog/config/redis.yml')).to eq(read(File.join(described_class.source_root, 'config/redis.yml')))
     expect(read('blog/config/initializers/redis.rb')).to include('REDIS = Redis.new')
-    expect(read('blog/Gemfile')).to include("gem 'redis', '~> 5.0'\n")
+    expect(read('blog/Gemfile')).to include("gem 'redis', '~> 6.0'\n")
   end
 
   it 'adds the HTML layout, welcome page and public directory with --views' do

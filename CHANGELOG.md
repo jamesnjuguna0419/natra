@@ -26,6 +26,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - The HTML controller generated with `--views` routes `DELETE /posts/:id` instead of `DELETE /posts/:id/delete`, and `PATCH` redirects to the record instead of the literal path `/posts/:id`.
 - Generated migrations write `create_table :posts, id: :uuid` without a space before the comma, and the generated RuboCop config skips `db/schema.rb`, so a freshly scaffolded app passes RuboCop.
 - The development Gemfile no longer pins `parallel` below 2, which was only needed for Ruby 3.2. parallel is now 2.3.0.
+- `natra new --redis` adds `gem 'redis', '~> 6.0'` (was `~> 5.0`). redis 6 talks RESP3 by default; the generated `config/redis.yml` and initializer work unchanged.
 
 ## [2.0.0] - 2026-10-04
 
