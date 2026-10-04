@@ -1,21 +1,20 @@
 # frozen_string_literal: true
 
+require 'simplecov'
+SimpleCov.start
+
 ENV['RACK_ENV'] = 'test'
 require_relative '../config/environment'
 require 'rack/test'
 require 'capybara/rspec'
 require 'capybara/dsl'
-require 'coveralls'
-Coveralls.wear!
-if ActiveRecord::Migrator.needs_migration?
-  raise 'Migrations are pending. Run `rake db:migrate RACK_ENV=test` to resolve the issue.'
-end
+
+ActiveRecord::Migration.check_all_pending!
 
 ActiveRecord::Base.logger = nil
 
 RSpec.configure do |config|
-  config.run_all_when_everything_filtered = true
-  config.filter_run :focus
+  config.filter_run_when_matching :focus
   config.include Rack::Test::Methods
   config.include Capybara::DSL
   DatabaseCleaner.strategy = :truncation
@@ -28,11 +27,11 @@ RSpec.configure do |config|
     DatabaseCleaner.clean
   end
 
-  config.order = 'default'
+  config.order = :defined
 end
 
 def app
-  Rack::Builder.parse_file('config.ru').first
+  Rack::Builder.parse_file('config.ru')
 end
 
 Capybara.app = app

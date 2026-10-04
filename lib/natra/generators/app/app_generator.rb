@@ -1,5 +1,6 @@
 # frozen_string_literal: true
 
+require 'shellwords'
 require 'thor/group'
 module Natra
   module Generators
@@ -11,7 +12,7 @@ module Natra
       argument :name, type: :string, desc: 'The name of the new application'
       class_option :capistrano, type: :boolean, desc: 'Include Capistrano configuration'
       class_option :redis, type: :boolean, desc: 'Include Redis configuration'
-      class_option :rvm, type: :boolean, desc: 'Create .ruby-version (ruby-2.1.0) and .ruby-gemset'
+      class_option :rvm, type: :boolean, desc: 'Create .ruby-version (the Ruby running natra, 3.3+) and .ruby-gemset'
       class_option :bundle, type: :boolean, desc: 'Run bundle after generating the app'
       class_option :git, type: :boolean, desc: 'Initialize a Git repository'
 
@@ -33,11 +34,12 @@ module Natra
       end
 
       def create_seeds_file
-        create_file File.join(@app_path, 'db', 'seeds.rb')
+        create_file File.join(@app_path, 'db', 'seeds.rb'), "# Seed data, loaded by rake db:seed.\n"
       end
 
       def initialize_db
         copy_file('bin/setup', File.join(@app_path, 'bin/setup'))
+        chmod(File.join(@app_path, 'bin/setup'), 0o755)
       end
 
       def uuid_setup
@@ -63,6 +65,14 @@ module Natra
 
       def create_config
         template 'config.ru', File.join(@app_path, 'config.ru')
+      end
+
+      def create_puma_config
+        copy_file 'config/puma.rb', File.join(@app_path, 'config/puma.rb')
+      end
+
+      def create_oj_initializer
+        copy_file 'config/initializers/oj.rb', File.join(@app_path, 'config/initializers/oj.rb')
       end
 
       def create_gemfile
@@ -128,7 +138,7 @@ module Natra
       def create_rvm_gemset
         return unless @rvm
 
-        create_file(File.join(@app_path, '.ruby-version'), 'ruby-2.5.3')
+        create_file(File.join(@app_path, '.ruby-version'), "ruby-#{RUBY_VERSION}")
         create_file(File.join(@app_path, '.ruby-gemset'), @app_path)
 
         @bundle = false
@@ -143,14 +153,12 @@ module Natra
         inside(@app_path) { run('bundle') if @bundle }
       end
 
+      # The Git repository, if any, was created by initialize_git_repo.
       def initialize_app
-        system <<~SCRIPT
-          cd #{@app_path}
-          chmod +x bin/setup
-          git init
-          git add .
-          docker-compose build --pull
-        SCRIPT
+        commands = ["cd #{Shellwords.escape(@app_path)}"]
+        commands << 'git add .' if @git
+        commands << 'docker compose build --pull'
+        system commands.join("\n")
       end
     end
   end

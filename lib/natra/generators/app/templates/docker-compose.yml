@@ -1,20 +1,18 @@
-version: "2.3"
-
 services:
   web:
     build:
       context: .
       target: development
-    command: puma
+    command: bundle exec puma -C config/puma.rb
     volumes:
       - .:/usr/src/app
     ports:
       - '9292:9292'
-    links:
+    depends_on:
       - db
     env_file: secrets.env
   db:
-    image: postgres:10-alpine
+    image: postgres:17-alpine
     ports:
       - "54329:5432"
     env_file: secrets.env
