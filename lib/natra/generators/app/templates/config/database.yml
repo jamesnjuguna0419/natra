@@ -1,15 +1,15 @@
 development:
   adapter: postgresql
   encoding: unicode
-  database: ENV['DEV_DATABASE']
-  pool: 2
+  database: <%%= ENV.fetch('DEV_DATABASE', 'development_<%= @name.directory_name %>') %>
+  pool: 5
 production:
   adapter: postgresql
   encoding: unicode
-  database: ENV['PROD_DATABASE']
-  pool: 2
+  database: <%%= ENV.fetch('PROD_DATABASE', 'production_<%= @name.directory_name %>') %>
+  pool: 5
 test:
   adapter: postgresql
   encoding: unicode
-  database: ENV['TEST_DATABASE']
-  pool: 2
+  database: <%%= ENV.fetch('TEST_DATABASE', 'test_<%= @name.directory_name %>') %>
+  pool: 5

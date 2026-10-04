@@ -1,25 +1,31 @@
-FROM ruby:2.5.3 AS base
+FROM ruby:3.3-slim AS base
+
+# build-essential compiles native gems (bcrypt, oj, puma); libpq-dev is needed by pg.
+RUN apt-get update -qq \
+  && apt-get install -y --no-install-recommends build-essential git libpq-dev libyaml-dev \
+  && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /usr/src/app
 
-RUN gem install bundler
-
-COPY Gemfile /usr/src/app/
+COPY Gemfile Gemfile.lock* ./
 
 FROM base AS development
 
-RUN bundle install -j5 --without staging production
+RUN bundle install -j5
 
-COPY . /usr/src/app
+COPY . .
 
 FROM base AS release
 
-RUN bundle install -j5 --without development test
+ENV RACK_ENV=production \
+    BUNDLE_WITHOUT=development:test
 
-RUN chmod 755 ./usr/src/app
+RUN bundle install -j5
 
-RUN chmod 755 ./usr/src/app/bin/setup
+COPY . .
 
-COPY . /usr/src/app
+RUN chmod 755 bin/setup
 
-CMD puma
+EXPOSE 9292
+
+CMD ["bundle", "exec", "puma", "-C", "config/puma.rb"]

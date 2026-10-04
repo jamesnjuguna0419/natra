@@ -46,7 +46,7 @@ RSpec.shared_context 'in a temp dir' do
   around { |example| within_tmpdir(&example) }
 end
 
-# `natra new` shells out (git, bundle, cap, docker-compose), either directly or
+# `natra new` shells out (git, bundle, cap, docker compose), either directly or
 # through Thor's `run`, which calls `system` too. Record those commands instead
 # of running them so specs never touch the network or Docker.
 RSpec.shared_context 'with stubbed shell commands' do
