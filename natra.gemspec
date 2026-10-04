@@ -7,8 +7,8 @@ require 'natra/version'
 Gem::Specification.new do |spec|
   spec.name          = 'natra'
   spec.version       = Natra::VERSION
-  spec.authors       = ['Thiru Njuguna']
-  spec.email         = ['thirunjuguna@outlook.com']
+  spec.authors       = ['James Njuguna']
+  spec.email         = ['jamesnju']
 
   spec.summary       = 'Natra generate a light weight sinatra application'
   spec.description   = 'Natra generate a light weight sinatra application.It\'s ideal for building containerized api services with postgres database'
@@ -29,5 +29,5 @@ Gem::Specification.new do |spec|
   spec.require_paths = ['lib']
   spec.add_development_dependency 'bundler', '~> 2.0'
   spec.add_runtime_dependency('activesupport', '>= 5', '< 7')
-  spec.add_runtime_dependency('thor', '~> 0.18')
+  spec.add_runtime_dependency('thor', '~> 1.3')
 end
