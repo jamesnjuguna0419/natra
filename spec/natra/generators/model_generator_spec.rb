@@ -18,7 +18,7 @@ RSpec.describe Natra::Generators::ModelGenerator, 'natra model' do
     run_cli('model', 'post', 'title', 'body:text', 'views:integer')
 
     migration = read('db/migrate/20261004153007_create_posts.rb')
-    expect(migration).to include('class CreatePosts < ActiveRecord::Migration[5.2]', 'create_table :posts ,id: :uuid')
+    expect(migration).to include('class CreatePosts < ActiveRecord::Migration[8.1]', 'create_table :posts ,id: :uuid')
     columns = migration.scan(/^\s+t\.\w+ :\w+$/).map(&:strip)
     expect(columns).to eq(['t.string :title', 't.text :body', 't.integer :views'])
     expect(migration).to include('t.timestamps null: false')

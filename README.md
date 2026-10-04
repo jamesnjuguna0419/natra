@@ -1,60 +1,176 @@
 # Natra
+
 [![CI](https://github.com/jamesnjuguna0419/natra/actions/workflows/ci.yml/badge.svg)](https://github.com/jamesnjuguna0419/natra/actions/workflows/ci.yml)
 [![Gem Version](https://img.shields.io/gem/v/natra.svg)](https://rubygems.org/gems/natra)
+[![Downloads](https://img.shields.io/gem/dt/natra.svg)](https://rubygems.org/gems/natra)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE.txt)
+
+Natra is a command line generator for small Sinatra services. `natra new` creates a JSON API skeleton with ActiveRecord, PostgreSQL, Puma, RSpec, RuboCop and a Docker setup. Inside that app, `natra model`, `natra controller`, `natra scaffold` and `natra service_object` add models with migrations, controllers with views, and plain Ruby service objects.
+
+## Requirements
+
+- Ruby 3.3 or newer to run natra and the apps it generates.
+- PostgreSQL for the generated app's database.
+- Docker with Compose v2, only if you want the generated Docker setup. `natra new` runs `docker compose build --pull` as its last step. Without Docker that step prints an error, but the app is still generated and you can run it locally.
 
 ## Installation
 
-Add this line to your application's Gemfile:
-
-```ruby
-gem 'natra'
+```sh
+gem install natra
 ```
 
-And then execute:
+The latest release on RubyGems is 0.0.8, which still generates Ruby 2.5 apps. Until the next release, install natra from source to get the Ruby 3.3 templates:
 
-    $ bundle
+```sh
+git clone https://github.com/jamesnjuguna0419/natra.git
+cd natra
+bundle install
+bundle exec rake install
+```
 
-Or install it yourself as:
+## Quick start
 
-    $ gem install natra
+```sh
+natra new my-api
+cd my-api
+```
+
+### Run with Docker
+
+`secrets.env` holds the database settings for the `web` and `db` containers.
+
+```sh
+docker compose run --rm web bin/setup
+docker compose up
+```
+
+### Run locally
+
+Start PostgreSQL first. Without `DATABASE_URL`, `config/database.yml` uses the databases `development_my_api` and `test_my_api` (override them with `DEV_DATABASE` and `TEST_DATABASE`).
+
+```sh
+bundle install
+bundle exec rake db:create db:migrate
+bundle exec puma -C config/puma.rb
+```
+
+Either way the app listens on http://localhost:9292. Run its specs with `bundle exec rspec` after `RACK_ENV=test bundle exec rake db:create db:migrate`.
 
 ## Commands
+
+| Command | What it does | Options |
+| --- | --- | --- |
+| `natra new APP_PATH` | Creates a new Sinatra application in `APP_PATH` | `--git` runs `git init` and `git add .`<br>`--bundle` runs `bundle install`<br>`--redis` adds the redis gem, `config/redis.yml` and a Redis initializer<br>`--capistrano` runs `cap install`<br>`--rvm` writes `.ruby-version` (the Ruby running natra) and `.ruby-gemset`, and skips `--bundle` |
+| `natra model NAME [field:type ...]` | Generates a model and a migration that creates its table | `--no-migration` skips the migration |
+| `natra controller NAME` | Generates a controller with routes, mounts it in `config.ru` and adds its views | `--no-views` skips the views |
+| `natra scaffold NAME [field:type ...]` | Runs `model` and `controller` for `NAME` | |
+| `natra service_object NAME` | Generates a service object in `app/services` | |
+| `natra -v`, `natra --version` | Prints the natra version | |
+| `natra help [COMMAND]` | Lists the commands, or describes one | |
+
+Run `model`, `controller`, `scaffold` and `service_object` from the root of a generated app.
+
+Naming rules:
+
+- `APP_PATH` is lowercased, and characters other than letters, `-` and `_` are dropped. `natra new My-Blog` creates `my-blog`.
+- Fields are written `name:type`, for example `title:string body:text published:boolean`. The type defaults to `string`, so `title` is the same as `title:string`.
+- Models are singular (a plural name is singularized with a warning). Controllers and service objects are pluralized: `natra controller post` creates `PostsController`, and `natra service_object payment` creates `PaymentsService`.
+
+## What you get
+
+`natra new blog` creates:
+
 ```
-natra -v              # Show Natra version number
-natra help [COMMAND]  # Describe available commands or one specific command
-natra new APP-NAME    # Creates a new Sinatra application
-natra model NAME      # Generate a model
-natra controller NAME # Generate a controller
-natra scaffold NAME   # Generate a model with its associated views and controllers
+blog/
+├── .gitignore
+├── .rspec
+├── .rubocop.yml
+├── Dockerfile
+├── Gemfile
+├── Guardfile
+├── README.md
+├── Rakefile
+├── config.ru
+├── docker-compose.yml
+├── secrets.env
+├── app/
+│   ├── controllers/application_controller.rb
+│   ├── models/
+│   ├── services/
+│   └── views/
+│       ├── layout.erb
+│       └── welcome.erb
+├── bin/setup
+├── config/
+│   ├── database.yml
+│   ├── environment.rb
+│   ├── puma.rb
+│   └── initializers/oj.rb
+├── db/
+│   ├── migrate/YYYYMMDD0000_add_extensions.rb
+│   └── seeds.rb
+├── lib/
+├── public/favicon.ico
+└── spec/
+    ├── application_controller_spec.rb
+    ├── spec_helper.rb
+    └── support/
 ```
-The controller generator also have an optional views flag `--no-views` to create controllers without views.
 
-## Using Natra
+The Gemfile uses Sinatra 4, ActiveRecord 8.1 through sinatra-activerecord, pg, Puma, Oj, rack-timeout and Scout APM, with RSpec, Capybara, FactoryBot, Faker, DatabaseCleaner, SimpleCov and Guard for tests. The first migration enables the `hstore`, `uuid-ossp` and `pgcrypto` PostgreSQL extensions. The Rakefile loads the sinatra-activerecord tasks, such as `db:create`, `db:migrate`, `db:seed` and `db:create_migration`.
 
-To generate your app:
+`natra scaffold post title:string body:text` then creates:
 
-    natra new APP-NAME
+```
+app/models/post.rb                          # class Post < ActiveRecord::Base
+db/migrate/YYYYMMDDHHMMSS_create_posts.rb   # posts table with a UUID id, title, body and timestamps
+app/controllers/posts_controller.rb         # index, new, create, show, edit, update and delete routes
+app/views/posts/index.html.erb
+app/views/posts/new.html.erb
+app/views/posts/show.html.erb
+app/views/posts/edit.html.erb
+```
 
-After natra is done generating your app, run `bundle install` from your app's directory:
-
-    cd APP-NAME
-    bundle install
+It also adds `use PostsController` to `config.ru`.
 
 ## Development
 
-After checking out the repo, run `bin/setup` to install dependencies. Then, run `rake spec` to run the tests. You can also run `bin/console` for an interactive prompt that will allow you to experiment.
+Natra is developed on Ruby 3.3.10 (see `.ruby-version`). CI runs on Ruby 3.3 and 3.4.
 
-To install this gem onto your local machine, run `bundle exec rake install`. To release a new version, update the version number in `version.rb`, and then run `bundle exec rake release`, which will create a git tag for the version, push git commits and tags, and push the `.gem` file to [rubygems.org](https://rubygems.org).
+```sh
+bin/setup                    # install dependencies
+bundle exec rspec            # run the specs
+bundle exec rubocop          # lint
+bin/console                  # Pry session with natra loaded
+```
+
+SimpleCov measures line and branch coverage and writes a report to `coverage/`. CI requires 100% line and branch coverage. Run `CI=true bundle exec rspec` to apply the same check locally.
+
+To release a new version:
+
+1. Update the version number in `lib/natra/version.rb`.
+2. Move the entries under "Unreleased" in [CHANGELOG.md](CHANGELOG.md) to a section for the new version.
+3. Commit, then run `bundle exec rake release`. This builds the gem, tags the version, pushes the commit and tag, and pushes the gem to [rubygems.org](https://rubygems.org/gems/natra).
+
+## Changelog
+
+Notable changes are listed in [CHANGELOG.md](CHANGELOG.md).
 
 ## Contributing
 
-Bug reports and pull requests are welcome on GitHub at https://github.com/thirunjuguna/natra. This project is intended to be a safe, welcoming space for collaboration, and contributors are expected to adhere to the [Contributor Covenant](http://contributor-covenant.org) code of conduct.
+Bug reports and pull requests are welcome on GitHub at https://github.com/jamesnjuguna0419/natra.
 
-## License
-
-The gem is available as open source under the terms of the [MIT License](https://opensource.org/licenses/MIT).
+1. Open an issue first for larger changes, so the approach can be agreed before you write code.
+2. Fork the repository and create a branch from `master`.
+3. Make your change and add or update specs for it. If you change what a generator produces, update its spec under `spec/natra/generators/`.
+4. Check that `CI=true bundle exec rspec` passes with 100% line and branch coverage, and that `bundle exec rubocop` reports no offenses.
+5. Add a line to the "Unreleased" section of [CHANGELOG.md](CHANGELOG.md).
+6. Open a pull request that explains what changed and why.
 
 ## Code of Conduct
 
-Everyone interacting in the Natra project’s codebases, issue trackers, chat rooms and mailing lists is expected to follow the [code of conduct](https://github.com/thirunjuguna/natra/blob/master/CODE_OF_CONDUCT.md).
+This project is intended to be a safe, welcoming space for collaboration. Everyone interacting in the Natra project's codebases, issue trackers, chat rooms and mailing lists is expected to follow the [Code of Conduct](CODE_OF_CONDUCT.md), which is adapted from the [Contributor Covenant](https://www.contributor-covenant.org).
+
+## License
+
+The gem is available as open source under the terms of the [MIT License](LICENSE.txt).
