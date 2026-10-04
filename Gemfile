@@ -3,7 +3,6 @@
 source 'https://rubygems.org/'
 gemspec
 gem 'active_model_serializers', '~> 0.10.16'
-gem 'coveralls'
 group :development do
   gem 'guard'
   gem 'guard-rspec', require: false
@@ -11,4 +10,5 @@ group :development do
   gem 'pry'
   gem 'rake'
   gem 'rspec'
+  gem 'simplecov', require: false
 end
