@@ -10,24 +10,26 @@ Gem::Specification.new do |spec|
   spec.authors       = ['James Njuguna']
   spec.email         = ['jamesnjuguna0419@gmail.com']
 
-  spec.summary       = 'Natra generate a light weight sinatra application'
-  spec.description   = 'Natra generate a light weight sinatra application.It\'s ideal for building containerized api services with postgres database'
+  spec.summary       = 'Natra generates lightweight Sinatra applications'
+  spec.required_ruby_version = '>= 3.2'
+  spec.description   = 'Natra generates lightweight Sinatra applications, ideal for containerized ' \
+                       'API services with a PostgreSQL database.'
   spec.homepage      = 'https://github.com/jamesnjuguna0419/natra'
   spec.license       = 'MIT'
   if spec.respond_to?(:metadata)
     spec.metadata['homepage_uri'] = spec.homepage
     spec.metadata['source_code_uri'] = 'https://github.com/jamesnjuguna0419/natra'
     spec.metadata['changelog_uri'] = 'https://github.com/jamesnjuguna0419/natra'
+    spec.metadata['rubygems_mfa_required'] = 'true'
   else
     raise 'RubyGems 2.0 or newer is required to protect against ' \
-      'public gem pushes.'
+          'public gem pushes.'
   end
   spec.files = Dir.chdir(File.expand_path(__dir__)) do
     `git ls-files -z`.split("\x0").reject { |f| f.match(%r{^(test|spec|features)/}) }
   end
   spec.executables = ['natra']
   spec.require_paths = ['lib']
-  spec.add_development_dependency 'bundler', '~> 2.0'
-  spec.add_runtime_dependency('activesupport', '>= 6.1', '< 9')
-  spec.add_runtime_dependency('thor', '~> 1.3')
+  spec.add_dependency('activesupport', '>= 6.1', '< 9')
+  spec.add_dependency('thor', '~> 1.3')
 end

@@ -8,4 +8,5 @@ require 'natra/generators/controller/controller_generator'
 require 'natra/generators/service/service_generator'
 require 'natra/version'
 require 'natra/cli'
+# Generates lightweight Sinatra API applications and their models, controllers and services.
 module Natra; end

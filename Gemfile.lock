@@ -182,7 +182,6 @@ PLATFORMS
 
 DEPENDENCIES
   active_model_serializers (~> 0.10.16)
-  bundler (~> 2.0)
   guard
   guard-rspec
   guard-rubocop

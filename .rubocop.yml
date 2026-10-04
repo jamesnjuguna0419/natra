@@ -1,0 +1,23 @@
+AllCops:
+  TargetRubyVersion: 3.2
+  NewCops: enable
+  SuggestExtensions: false
+  Exclude:
+    - 'lib/natra/generators/*/templates/**/*'
+    - 'lib/natra/generators/*/template/**/*'
+    - 'vendor/**/*'
+    - 'coverage/**/*'
+
+Metrics/BlockLength:
+  Exclude:
+    - 'Guardfile'
+    - 'natra.gemspec'
+    - 'spec/**/*'
+
+Metrics/ClassLength:
+  Exclude:
+    - 'lib/natra/generators/app/app_generator.rb'
+
+Metrics/AbcSize:
+  Exclude:
+    - 'lib/natra/generators/model/model_generator.rb'

@@ -7,6 +7,7 @@ module Natra
     # Generates a plain Ruby service object.
     class ServiceGenerator < Thor::Group
       include Thor::Actions
+
       attr_reader :service_name, :class_name, :file_name
 
       desc 'Generate a Service Object'

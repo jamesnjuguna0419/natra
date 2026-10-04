@@ -4,6 +4,7 @@ require 'thor/group'
 require 'active_support/inflector'
 module Natra
   module Generators
+    # Generates a model with its controller and views (natra scaffold).
     class ScaffoldGenerator < Thor::Group
       include Thor::Actions
 

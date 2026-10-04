@@ -4,8 +4,10 @@ require 'thor/group'
 require 'active_support/inflector'
 module Natra
   module Generators
+    # Generates a controller, its routes and views (natra controller).
     class ControllerGenerator < Thor::Group
       include Thor::Actions
+
       attr_reader :controller_name, :class_name, :file_name
 
       desc 'Generate an Controller with associated views'
