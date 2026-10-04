@@ -1,37 +1,38 @@
 class <%= class_name %> < ApplicationController
-
-  # GET: /<%= controller_name %>
-  get "/<%= controller_name %>" do
-    erb :"/<%= controller_name %>/index.html"
+  get '/<%= controller_name %>' do
+    json <%= model_class %>.order(:created_at)
   end
 
-  # GET: /<%= controller_name %>/new
-  get "/<%= controller_name %>/new" do
-    erb :"/<%= controller_name %>/new.html"
+  get '/<%= controller_name %>/:id' do
+    json find_<%= model_name %>
   end
 
-  # POST: /<%= controller_name %>
-  post "/<%= controller_name %>" do
-    redirect "/<%= controller_name %>"
+  post '/<%= controller_name %>' do
+    json <%= model_class %>.create!(<%= model_name %>_params), 201
   end
 
-  # GET: /<%= controller_name %>/5
-  get "/<%= controller_name %>/:id" do
-    erb :"/<%= controller_name %>/show.html"
+  patch '/<%= controller_name %>/:id' do
+    record = find_<%= model_name %>
+    record.update!(<%= model_name %>_params)
+    json record
   end
 
-  # GET: /<%= controller_name %>/5/edit
-  get "/<%= controller_name %>/:id/edit" do
-    erb :"/<%= controller_name %>/edit.html"
+  delete '/<%= controller_name %>/:id' do
+    find_<%= model_name %>.destroy!
+    halt 204
   end
 
-  # PATCH: /<%= controller_name %>/5
-  patch "/<%= controller_name %>/:id" do
-    redirect "/<%= controller_name %>/:id"
+  private
+
+  def find_<%= model_name %>
+    <%= model_class %>.find(params[:id])
   end
 
-  # DELETE: /<%= controller_name %>/5/delete
-  delete "/<%= controller_name %>/:id/delete" do
-    redirect "/<%= controller_name %>"
+  def <%= model_name %>_params
+<% if permitted_attributes.any? -%>
+    json_params.slice(<%= permitted_attributes.map { |attribute| "'#{attribute}'" }.join(', ') %>)
+<% else -%>
+    json_params.slice(*(<%= model_class %>.column_names - %w(id created_at updated_at)))
+<% end -%>
   end
 end
