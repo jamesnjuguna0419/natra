@@ -13,3 +13,15 @@ RSpec.describe Natra::Generators::ServiceGenerator, 'natra service_object' do
     expect(service).to include('def initialize(*args)', 'def call')
   end
 end
+
+RSpec.describe Natra::Generators::ServiceGenerator, 'config.ru' do
+  include_context 'in a temp dir'
+
+  before { create_app_skeleton }
+
+  # A service is not Rack middleware: its #call takes no env, so `use` would
+  # break every request. environment.rb already loads app/ with require_all.
+  it 'is left untouched' do
+    expect { run_cli('service_object', 'payment') }.not_to(change { read('config.ru') })
+  end
+end
