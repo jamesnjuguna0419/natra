@@ -21,3 +21,6 @@ Metrics/ClassLength:
 Metrics/AbcSize:
   Exclude:
     - 'lib/natra/generators/model/model_generator.rb'
+
+Gemspec/RequireMFA:
+  Enabled: false

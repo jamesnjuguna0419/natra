@@ -1,7 +1,7 @@
 PATH
   remote: .
   specs:
-    natra (1.9.0)
+    natra (2.0.0)
       activesupport (>= 6.1, < 9)
       thor (~> 1.3)
 
