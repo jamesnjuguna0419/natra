@@ -15,7 +15,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        ruby: ['3.3', '3.4']
+        ruby: ['3.3', '3.4.3', '3.4.8', '3.4.9', '3.4']
     steps:
       - uses: actions/checkout@v7
       - uses: ruby/setup-ruby@v1

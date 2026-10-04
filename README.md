@@ -189,7 +189,7 @@ It also adds `use PostsController` to `config.ru`.
 
 ## Development
 
-Natra is developed on Ruby 3.3.10 (see `.ruby-version`). CI runs on Ruby 3.3 and 3.4.
+Natra is developed on Ruby 3.3.10 (see `.ruby-version`). CI runs on Ruby 3.3, 3.4.3, 3.4.8, 3.4.9 and the latest 3.4.
 
 ```sh
 bin/setup                    # install dependencies

@@ -16,7 +16,7 @@ The app listens on http://localhost:9292. Compose starts `web` once the database
 
 ## Running locally
 
-You need Ruby 3.3 and a running PostgreSQL server.
+You need Ruby 3.3 or newer (3.4 works too) and a running PostgreSQL server.
 
 ```sh
 bundle install
