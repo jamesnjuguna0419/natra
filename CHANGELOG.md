@@ -33,6 +33,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Removed
 
 - `capybara` from the generated Gemfile and spec helper. Generated apps test their endpoints with rack-test request specs, and `--views` adds no browser specs.
+- `seed-fu` from the generated Gemfile. `rake db:seed` from sinatra-activerecord loads the plain Ruby `db/seeds.rb`, which `bin/setup` runs after migrating.
 
 ## [2.0.0] - 2026-10-04
 

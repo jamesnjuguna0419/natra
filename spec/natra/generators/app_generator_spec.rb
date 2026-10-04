@@ -53,7 +53,7 @@ RSpec.describe Natra::Generators::AppGenerator, 'rendered templates' do
     gemfile = read('my-blog/Gemfile')
     expect(gemfile).to include("ruby '~> 3.3'", "gem 'pg', '~> 1.7'", "gem 'sinatra', '~> 4.1'", "gem 'simplecov'")
     expect(gemfile).to include("gem 'puma', '~> 8.0'", "gem 'oj', '~> 3.17'")
-    expect(gemfile).not_to match(/coveralls|tux|capybara/)
+    expect(gemfile).not_to match(/coveralls|tux|capybara|seed-fu/)
     expect(read('my-blog/Dockerfile')).to start_with('FROM ruby:3.3-slim').and include('libpq-dev')
   end
 
@@ -71,6 +71,11 @@ RSpec.describe Natra::Generators::AppGenerator, 'rendered templates' do
     migration = Dir.glob('my-blog/db/migrate/*_add_extensions.rb').first
     expect(read(migration)).to include('ActiveRecord::Migration[8.1]')
     expect(read('my-blog/Gemfile')).to include("gem 'activerecord', '~> 8.1'")
+  end
+
+  it 'writes a plain db/seeds.rb for rake db:seed' do
+    expect(read('my-blog/db/seeds.rb')).to eq("# Seed data, loaded by rake db:seed.\n")
+    expect(read('my-blog/bin/setup')).to include('bundle exec rake db:seed')
   end
 
   it 'titles the README with the app name' do

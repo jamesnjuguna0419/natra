@@ -15,7 +15,6 @@ gem 'redis', '~> 6.0'
 <% end -%>
 gem 'require_all', '~> 3.0'
 gem 'scout_apm', '~> 6.0'
-gem 'seed-fu', '~> 2.3'
 gem 'sinatra', '~> 4.1'
 gem 'sinatra-activerecord', '~> 2.0', require: 'sinatra/activerecord'
 

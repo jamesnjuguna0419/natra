@@ -20,9 +20,11 @@ You need Ruby 3.3 and a running PostgreSQL server.
 
 ```sh
 bundle install
-bundle exec rake db:create db:migrate
+bundle exec rake db:create db:migrate db:seed
 bundle exec puma -C config/puma.rb
 ```
+
+`rake db:seed` loads `db/seeds.rb`.
 
 `config/database.yml` reads the database names from `DEV_DATABASE`, `TEST_DATABASE` and `PROD_DATABASE`, and falls back to `development_<%= @name.directory_name %>`, `test_<%= @name.directory_name %>` and `production_<%= @name.directory_name %>`. If `DATABASE_URL` is set, it is used instead.
 
