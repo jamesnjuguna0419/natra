@@ -58,7 +58,8 @@ GEM
     drb (2.2.3)
     erubi (1.13.1)
     ffi (1.17.4)
-    formatador (0.2.5)
+    formatador (1.2.3)
+      reline
     guard (2.20.2)
       formatador (>= 0.2.4)
       listen (>= 2.7, < 4.0)
