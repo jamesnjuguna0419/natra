@@ -19,15 +19,6 @@ Natra is a command line generator for small Sinatra services. `natra new` create
 gem install natra
 ```
 
-The latest release on RubyGems is 0.0.8, which still generates Ruby 2.5 apps. Until the next release, install natra from source to get the Ruby 3.3 templates:
-
-```sh
-git clone https://github.com/jamesnjuguna0419/natra.git
-cd natra
-bundle install
-bundle exec rake install
-```
-
 ## Quick start
 
 ```sh

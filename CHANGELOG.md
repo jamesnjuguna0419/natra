@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [2.0.0] - 2026-10-04
+
 Changes since 0.0.8.
 
 ### Added
@@ -52,4 +54,5 @@ Changes since 0.0.8.
 - The generated `config/database.yml` used literal `ENV['...']` strings as database names.
 - The generated spec helper called `ActiveRecord::Migrator.needs_migration?`, which no longer exists, and the generated welcome page lacked the heading its spec expects.
 
-[Unreleased]: https://github.com/jamesnjuguna0419/natra/compare/v0.0.8...HEAD
+[Unreleased]: https://github.com/jamesnjuguna0419/natra/compare/v2.0.0...HEAD
+[2.0.0]: https://github.com/jamesnjuguna0419/natra/compare/v0.0.8...v2.0.0
