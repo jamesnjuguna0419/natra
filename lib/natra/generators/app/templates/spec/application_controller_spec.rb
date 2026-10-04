@@ -5,12 +5,21 @@ describe ApplicationController do
     Oj.load(last_response.body)
   end
 
+<% if @views -%>
+  it 'shows the welcome page at the root' do
+    get '/'
+    expect(last_response.status).to eq(200)
+    expect(last_response.content_type).to include('text/html')
+    expect(last_response.body).to include('Welcome to the Sinatra Template!', '<title><%= @name.camel_case %></title>')
+  end
+<% else -%>
   it 'describes the app at the root' do
     get '/'
     expect(last_response.status).to eq(200)
     expect(last_response.content_type).to include('application/json')
     expect(json_body).to eq('name' => '<%= @name.camel_case %>', 'status' => 'ok')
   end
+<% end -%>
 
   it 'reports a healthy database' do
     get '/health'

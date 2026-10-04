@@ -13,13 +13,20 @@ RSpec.describe Natra::Generators::AppGenerator, 'natra new' do
       config.ru Gemfile Rakefile README.md Dockerfile docker-compose.yml Guardfile secrets.env
       .gitignore .rspec .rubocop.yml bin/setup config/environment.rb config/database.yml config/puma.rb
       config/initializers/oj.rb
-      app/controllers/application_controller.rb app/views/layout.erb app/views/welcome.erb
-      app/models/.gitkeep db/seeds.rb lib/.keep public/favicon.ico spec/spec_helper.rb
+      app/controllers/application_controller.rb
+      app/models/.gitkeep db/seeds.rb lib/.keep spec/spec_helper.rb
       spec/application_controller_spec.rb spec/support/.keep
     ]
     expect(expected.reject { |file| File.file?(File.join('my-blog', file)) }).to be_empty
     expect(%w[app/services config/initializers db/migrate].map { |dir| File.directory?("my-blog/#{dir}") })
       .to all(be true)
+  end
+
+  it 'creates no views or public directory by default' do
+    run_cli('new', 'blog')
+
+    expect(File).not_to exist('blog/app/views')
+    expect(File).not_to exist('blog/public')
   end
 
   it 'does not create the optional redis and rvm files by default' do
@@ -35,12 +42,6 @@ RSpec.describe Natra::Generators::AppGenerator, 'rendered templates' do
   include_context 'with stubbed shell commands'
 
   before { run_cli('new', 'My-Blog') }
-
-  it 'uses the camel cased app name in the layout and keeps the yield tag' do
-    layout = read('my-blog/app/views/layout.erb')
-    expect(layout).to include('<title>MyBlog</title>', '<strong>MyBlog</strong>', '<%= yield %>')
-    expect(layout).to include("&copy; #{Time.now.year}")
-  end
 
   it 'names the databases after the app' do
     secrets = read('my-blog/secrets.env')
@@ -156,6 +157,20 @@ RSpec.describe Natra::Generators::AppGenerator, 'optional files' do
     expect(read('blog/config/redis.yml')).to eq(read(File.join(described_class.source_root, 'config/redis.yml')))
     expect(read('blog/config/initializers/redis.rb')).to include('REDIS = Redis.new')
     expect(read('blog/Gemfile')).to include("gem 'redis', '~> 5.0'\n")
+  end
+
+  it 'adds the HTML layout, welcome page and public directory with --views' do
+    run_cli('new', 'My-Blog', '--views')
+
+    layout = read('my-blog/app/views/layout.erb')
+    expect(layout).to include('<title>MyBlog</title>', '<strong>MyBlog</strong>', '<%= yield %>')
+    expect(layout).to include("&copy; #{Time.now.year}")
+    expect(read('my-blog/app/views/welcome.erb')).to include('Welcome to the Sinatra Template!')
+    expect(File).to exist('my-blog/public/favicon.ico')
+    controller = read('my-blog/app/controllers/application_controller.rb')
+    expect(controller).to include("set :views, 'app/views'", 'erb :welcome')
+    expect(controller).not_to include("json(name: 'MyBlog'")
+    expect(read('my-blog/spec/application_controller_spec.rb')).to include("include('text/html')")
   end
 
   it 'writes rvm files with --rvm and skips bundling even with --bundle' do

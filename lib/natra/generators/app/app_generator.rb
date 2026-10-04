@@ -15,6 +15,8 @@ module Natra
       class_option :rvm, type: :boolean, desc: 'Create .ruby-version (the Ruby running natra, 3.3+) and .ruby-gemset'
       class_option :bundle, type: :boolean, desc: 'Run bundle after generating the app'
       class_option :git, type: :boolean, desc: 'Initialize a Git repository'
+      class_option :views, type: :boolean, default: false,
+                           desc: 'Add an HTML layout, welcome page and public/ for server-rendered views'
 
       def setup
         @app_path = name.directory_name
@@ -48,13 +50,14 @@ module Natra
       end
 
       def create_public_directory
-        template 'public/favicon.ico', File.join(@app_path, 'public/favicon.ico')
+        template 'public/favicon.ico', File.join(@app_path, 'public/favicon.ico') if @views
       end
 
       def create_app_directory
         template 'app/controllers/application_controller.rb',
                  File.join(@app_path, 'app/controllers/application_controller.rb')
-        %w[app/views app/models].each { |dir| directory dir, File.join(@app_path, dir) }
+        directory 'app/models', File.join(@app_path, 'app/models')
+        directory 'app/views', File.join(@app_path, 'app/views') if @views
       end
 
       def create_app_spec

@@ -8,10 +8,19 @@ class ApplicationController < Sinatra::Base
     set :show_exceptions, false
     set :raise_errors, false
     set :dump_errors, false
+<% if @views -%>
+    set :public_folder, 'public'
+    set :views, 'app/views'
+<% end -%>
   end
 
   get '/' do
+<% if @views -%>
+    content_type :html
+    erb :welcome
+<% else -%>
     json(name: '<%= @name.camel_case %>', status: 'ok')
+<% end -%>
   end
 
   get '/health' do
