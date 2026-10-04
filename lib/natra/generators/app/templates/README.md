@@ -12,7 +12,7 @@ docker compose run --rm web bin/setup
 docker compose up
 ```
 
-The app listens on http://localhost:9292.
+The app listens on http://localhost:9292. Compose starts `web` once the database is healthy and health-checks it through `GET /health`.
 
 ## Running locally
 
@@ -26,12 +26,23 @@ bundle exec puma -C config/puma.rb
 
 `config/database.yml` reads the database names from `DEV_DATABASE`, `TEST_DATABASE` and `PROD_DATABASE`, and falls back to `development_<%= @name.directory_name %>`, `test_<%= @name.directory_name %>` and `production_<%= @name.directory_name %>`. If `DATABASE_URL` is set, it is used instead.
 
+## Endpoints
+
+```sh
+curl -s localhost:9292/         # {"name":"<%= @name.camel_case %>","status":"ok"}
+curl -s localhost:9292/health   # {"status":"ok","database":"ok"}, or 503 if the database is unreachable
+```
+
+Responses are JSON. `ApplicationController` returns `{"error":"Not found"}` with 404, `{"errors":{...}}` with 422 for validation errors, `{"error":"Invalid JSON"}` with 400 for a malformed request body, and `{"error":"Internal server error"}` with 500. Use `json(object, status)` to render and `json_params` to read the request body in your routes.
+
 ## Tests
 
 ```sh
 RACK_ENV=test bundle exec rake db:create db:migrate
 bundle exec rspec
 ```
+
+Request specs live in `spec/requests` and run against `config.ru` with rack-test. Each example runs in a transaction that is rolled back afterwards. `json_body` parses the last response and `json_request(:post, '/posts', 'title' => 'Hello')` sends a JSON body.
 
 To run the specs and RuboCop as files change:
 
@@ -44,8 +55,10 @@ bundle exec guard
 Run these from the app directory:
 
 ```sh
-natra model NAME [field:type ...]   # Generate a model and its migration
-natra controller NAME               # Generate a controller and its views
-natra scaffold NAME [field:type ...] # Generate a model, controller and views
-natra service_object NAME           # Generate a service object in app/services
+natra model NAME [field:type ...]    # Generate a model and its migration
+natra controller NAME [field ...]    # Generate a JSON controller for an existing model
+natra scaffold NAME [field:type ...] # Generate a model, JSON controller and request spec
+natra service_object NAME            # Generate a service object in app/services
 ```
+
+Add `--views` to `controller` or `scaffold` for HTML routes and erb views instead of JSON.
