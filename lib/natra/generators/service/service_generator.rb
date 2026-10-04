@@ -4,6 +4,7 @@ require 'thor/group'
 require 'active_support/inflector'
 module Natra
   module Generators
+    # Generates a plain Ruby service object.
     class ServiceGenerator < Thor::Group
       include Thor::Actions
       attr_reader :service_name, :class_name, :file_name
@@ -22,7 +23,7 @@ module Natra
       end
 
       def create_service
-        template 'templates/service.rb.erb', File.join('app/service', "#{file_name}.rb")
+        template 'template/service.rb.erb', File.join('app/service', "#{file_name}.rb")
         insert_into_file 'config.ru', "use #{class_name}\n", after: "run ApplicationController\n"
       end
     end
