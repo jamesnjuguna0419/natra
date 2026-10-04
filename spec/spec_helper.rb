@@ -4,6 +4,7 @@ require 'simplecov'
 SimpleCov.start do
   skip '/spec/'
   enable_coverage :branch
+  minimum_coverage line: 100, branch: 100 if ENV['CI']
 end
 
 require 'bundler/setup'
