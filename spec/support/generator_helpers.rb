@@ -12,7 +12,13 @@ module GeneratorHelpers
   end
 
   # Invokes the CLI the same way bin/natra does and returns what it printed.
-  def run_cli(*args)
+  # `answers` reply, in order, to Thor's prompts (e.g. "Overwrite file?"); an
+  # unexpected prompt fails the spec instead of waiting on the terminal.
+  def run_cli(*args, answers: [])
+    pending_answers = Array(answers).dup
+    allow(Thor::LineEditor).to receive(:readline) do |prompt, *|
+      pending_answers.shift || raise("unexpected prompt: #{prompt}")
+    end
     capture_stdout { Natra::CLI.start(args.flatten.map(&:to_s)) }
   end
 
@@ -33,6 +39,27 @@ module GeneratorHelpers
 
   def read(path)
     File.read(path)
+  end
+end
+
+RSpec.shared_context 'in a temp dir' do
+  around { |example| within_tmpdir(&example) }
+end
+
+# `natra new` shells out (git, bundle, cap, docker-compose), either directly or
+# through Thor's `run`, which calls `system` too. Record those commands instead
+# of running them so specs never touch the network or Docker.
+RSpec.shared_context 'with stubbed shell commands' do
+  let(:shell_commands) { [] }
+
+  before do
+    # no_commands stops Thor::Group from registering the stub as a generator step.
+    Natra::Generators::AppGenerator.no_commands do
+      allow_any_instance_of(Natra::Generators::AppGenerator).to receive(:system) do |_generator, command|
+        shell_commands << { command: command, dir: File.basename(Dir.pwd) }
+        true
+      end
+    end
   end
 end
 
