@@ -12,12 +12,12 @@ Gem::Specification.new do |spec|
 
   spec.summary       = 'Natra generate a light weight sinatra application'
   spec.description   = 'Natra generate a light weight sinatra application.It\'s ideal for building containerized api services with postgres database'
-  spec.homepage      = 'https://github.com/thirunjuguna/natra'
+  spec.homepage      = 'https://github.com/jamesnjuguna0419/natra'
   spec.license       = 'MIT'
   if spec.respond_to?(:metadata)
     spec.metadata['homepage_uri'] = spec.homepage
-    spec.metadata['source_code_uri'] = 'https://github.com/thirunjuguna/natra'
-    spec.metadata['changelog_uri'] = 'https://github.com/thirunjuguna/natra'
+    spec.metadata['source_code_uri'] = 'https://github.com/jamesnjuguna0419/natra'
+    spec.metadata['changelog_uri'] = 'https://github.com/jamesnjuguna0419/natra'
   else
     raise 'RubyGems 2.0 or newer is required to protect against ' \
       'public gem pushes.'

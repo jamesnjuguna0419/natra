@@ -2,7 +2,7 @@
 
 source 'https://rubygems.org/'
 gemspec
-gem 'active_model_serializers', '~> 0.10.10'
+gem 'active_model_serializers', '~> 0.10.16'
 gem 'coveralls'
 group :development do
   gem 'guard'
