@@ -1,10 +1,6 @@
 # frozen_string_literal: true
 
-describe ApplicationController do
-  def json_body
-    Oj.load(last_response.body)
-  end
-
+RSpec.describe ApplicationController do
 <% if @views -%>
   it 'shows the welcome page at the root' do
     get '/'

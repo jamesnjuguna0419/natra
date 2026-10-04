@@ -61,7 +61,7 @@ module Natra
       end
 
       def create_app_spec
-        template 'spec/application_controller_spec.rb', File.join(@app_path, 'spec/application_controller_spec.rb')
+        template 'spec/requests/application_spec.rb', File.join(@app_path, 'spec/requests/application_spec.rb')
       end
 
       def create_spec_helper

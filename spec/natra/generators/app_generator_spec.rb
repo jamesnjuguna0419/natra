@@ -15,7 +15,7 @@ RSpec.describe Natra::Generators::AppGenerator, 'natra new' do
       config/initializers/oj.rb
       app/controllers/application_controller.rb
       app/models/.gitkeep db/seeds.rb lib/.keep spec/spec_helper.rb
-      spec/application_controller_spec.rb spec/support/.keep
+      spec/requests/application_spec.rb spec/support/.keep
     ]
     expect(expected.reject { |file| File.file?(File.join('my-blog', file)) }).to be_empty
     expect(%w[app/services config/initializers db/migrate].map { |dir| File.directory?("my-blog/#{dir}") })
@@ -93,8 +93,16 @@ RSpec.describe Natra::Generators::AppGenerator, 'rendered templates' do
     expect(compose.dig('services', 'db', 'healthcheck', 'test').last).to include('pg_isready')
   end
 
+  it 'sets up request specs against config.ru with transactional database cleaning' do
+    helper = read('my-blog/spec/spec_helper.rb')
+    expect(helper).to include("require 'database_cleaner/active_record'",
+                              "Rack::Builder.parse_file(File.expand_path('../config.ru', __dir__))")
+    expect(helper).to include('DatabaseCleaner.strategy = :transaction', 'DatabaseCleaner.cleaning { example.run }')
+    expect(helper).to include('def json_body', 'def json_request(method, path, payload = {})')
+  end
+
   it 'specs the root and health endpoints' do
-    spec = read('my-blog/spec/application_controller_spec.rb')
+    spec = read('my-blog/spec/requests/application_spec.rb')
     expect(spec).to include("get '/health'", "'name' => 'MyBlog'", 'eq(503)')
   end
 end
@@ -170,7 +178,7 @@ RSpec.describe Natra::Generators::AppGenerator, 'optional files' do
     controller = read('my-blog/app/controllers/application_controller.rb')
     expect(controller).to include("set :views, 'app/views'", 'erb :welcome')
     expect(controller).not_to include("json(name: 'MyBlog'")
-    expect(read('my-blog/spec/application_controller_spec.rb')).to include("include('text/html')")
+    expect(read('my-blog/spec/requests/application_spec.rb')).to include("include('text/html')")
   end
 
   it 'writes rvm files with --rvm and skips bundling even with --bundle' do

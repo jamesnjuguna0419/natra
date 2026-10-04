@@ -1,0 +1,94 @@
+# frozen_string_literal: true
+
+RSpec.describe '/<%= controller_name %>' do
+  let(:attributes) { <%= attributes_literal %> }
+  let!(:record) { <%= model_class %>.create!(attributes) }
+
+  def reject_records
+    allow_any_instance_of(<%= model_class %>).to receive(:valid?) do |instance|
+      instance.errors.add(:base, 'is invalid')
+      false
+    end
+  end
+
+  describe 'GET /<%= controller_name %>' do
+    it 'lists the records' do
+      get '/<%= controller_name %>'
+      expect(last_response.status).to eq(200)
+      expect(json_body.map { |item| item['id'] }).to eq([record.id])
+    end
+  end
+
+  describe 'GET /<%= controller_name %>/:id' do
+    it 'returns the record' do
+      get "/<%= controller_name %>/#{record.id}"
+      expect(last_response.status).to eq(200)
+      expect(json_body).to include('id' => record.id)
+    end
+
+    it 'returns 404 for an unknown id' do
+      get "/<%= controller_name %>/#{SecureRandom.uuid}"
+      expect(last_response.status).to eq(404)
+      expect(json_body).to eq('error' => 'Not found')
+    end
+  end
+
+  describe 'POST /<%= controller_name %>' do
+    it 'creates a record' do
+      expect { json_request(:post, '/<%= controller_name %>', attributes) }.to change(<%= model_class %>, :count).by(1)
+      expect(last_response.status).to eq(201)
+      expect(json_body).to include(attributes)
+    end
+
+    it 'returns 422 with the validation errors when the record is invalid' do
+      reject_records
+      json_request(:post, '/<%= controller_name %>', attributes)
+      expect(last_response.status).to eq(422)
+      expect(json_body).to eq('errors' => { 'base' => ['is invalid'] })
+    end
+
+    it 'returns 400 for malformed JSON' do
+      json_request(:post, '/<%= controller_name %>', '{"oops"')
+      expect(last_response.status).to eq(400)
+      expect(json_body).to eq('error' => 'Invalid JSON')
+    end
+  end
+
+  describe 'PATCH /<%= controller_name %>/:id' do
+    it 'updates the record' do
+<% if update_field -%>
+      json_request(:patch, "/<%= controller_name %>/#{record.id}", '<%= update_field %>' => 'Updated <%= update_field %>')
+      expect(last_response.status).to eq(200)
+      expect(record.reload.<%= update_field %>).to eq('Updated <%= update_field %>')
+<% else -%>
+      json_request(:patch, "/<%= controller_name %>/#{record.id}", attributes)
+      expect(last_response.status).to eq(200)
+      expect(json_body).to include('id' => record.id)
+<% end -%>
+    end
+
+    it 'returns 422 when the record is invalid' do
+      reject_records
+      json_request(:patch, "/<%= controller_name %>/#{record.id}", attributes)
+      expect(last_response.status).to eq(422)
+    end
+
+    it 'returns 404 for an unknown id' do
+      json_request(:patch, "/<%= controller_name %>/#{SecureRandom.uuid}", attributes)
+      expect(last_response.status).to eq(404)
+    end
+  end
+
+  describe 'DELETE /<%= controller_name %>/:id' do
+    it 'deletes the record' do
+      expect { delete "/<%= controller_name %>/#{record.id}" }.to change(<%= model_class %>, :count).by(-1)
+      expect(last_response.status).to eq(204)
+      expect(last_response.body).to be_empty
+    end
+
+    it 'returns 404 for an unknown id' do
+      delete "/<%= controller_name %>/#{SecureRandom.uuid}"
+      expect(last_response.status).to eq(404)
+    end
+  end
+end
