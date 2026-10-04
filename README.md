@@ -174,7 +174,7 @@ blog/
     └── support/
 ```
 
-The Gemfile uses Sinatra 4, ActiveRecord 8.1 through sinatra-activerecord, pg, Puma, Oj, rack-timeout and Scout APM, with RSpec, Capybara, FactoryBot, Faker, DatabaseCleaner, SimpleCov and Guard for tests. The first migration enables the `hstore`, `uuid-ossp` and `pgcrypto` PostgreSQL extensions. The Rakefile loads the sinatra-activerecord tasks, such as `db:create`, `db:migrate`, `db:seed` and `db:create_migration`.
+The Gemfile uses Sinatra 4, ActiveRecord 8.1 through sinatra-activerecord, pg, Puma, Oj, rack-timeout and Scout APM, with RSpec, rack-test, FactoryBot, Faker, DatabaseCleaner, SimpleCov and Guard for tests. The first migration enables the `hstore`, `uuid-ossp` and `pgcrypto` PostgreSQL extensions. The Rakefile loads the sinatra-activerecord tasks, such as `db:create`, `db:migrate`, `db:seed` and `db:create_migration`.
 
 `natra scaffold post title:string body:text` then creates:
 

@@ -7,8 +7,6 @@ ENV['RACK_ENV'] = 'test'
 require_relative '../config/environment'
 require 'rack/test'
 require 'database_cleaner/active_record'
-require 'capybara/rspec'
-require 'capybara/dsl'
 
 ActiveRecord::Migration.check_all_pending!
 
@@ -35,7 +33,6 @@ RSpec.configure do |config|
   config.filter_run_when_matching :focus
   config.include Rack::Test::Methods
   config.include RequestHelpers
-  config.include Capybara::DSL
 
   config.before(:suite) do
     DatabaseCleaner.strategy = :transaction
@@ -48,5 +45,3 @@ RSpec.configure do |config|
 
   config.order = :defined
 end
-
-Capybara.app = APP

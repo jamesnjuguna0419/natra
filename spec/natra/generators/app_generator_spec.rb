@@ -53,7 +53,7 @@ RSpec.describe Natra::Generators::AppGenerator, 'rendered templates' do
     gemfile = read('my-blog/Gemfile')
     expect(gemfile).to include("ruby '~> 3.3'", "gem 'pg', '~> 1.7'", "gem 'sinatra', '~> 4.1'", "gem 'simplecov'")
     expect(gemfile).to include("gem 'puma', '~> 8.0'", "gem 'oj', '~> 3.17'")
-    expect(gemfile).not_to match(/coveralls|tux/)
+    expect(gemfile).not_to match(/coveralls|tux|capybara/)
     expect(read('my-blog/Dockerfile')).to start_with('FROM ruby:3.3-slim').and include('libpq-dev')
   end
 
@@ -100,6 +100,7 @@ RSpec.describe Natra::Generators::AppGenerator, 'rendered templates' do
                               "Rack::Builder.parse_file(File.expand_path('../config.ru', __dir__))")
     expect(helper).to include('DatabaseCleaner.strategy = :transaction', 'DatabaseCleaner.cleaning { example.run }')
     expect(helper).to include('def json_body', 'def json_request(method, path, payload = {})')
+    expect(helper).not_to include('Capybara')
   end
 
   it 'specs the root and health endpoints' do

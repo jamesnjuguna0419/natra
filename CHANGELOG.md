@@ -30,6 +30,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Generated apps pin `gem 'puma', '~> 8.0'` (was `>= 6.4`). The generated `config/puma.rb` is unchanged and runs on Puma 8.
 - Generated apps pin `gem 'pg', '~> 1.7'` (was `~> 1.5`) and `gem 'oj', '~> 3.17'` (was `~> 3.16`).
 
+### Removed
+
+- `capybara` from the generated Gemfile and spec helper. Generated apps test their endpoints with rack-test request specs, and `--views` adds no browser specs.
+
 ## [2.0.0] - 2026-10-04
 
 Changes since 0.0.8.
