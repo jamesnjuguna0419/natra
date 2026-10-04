@@ -7,6 +7,34 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Breaking
+
+- Generated apps are API-first: the default output changes from HTML to JSON. `natra controller` and `natra scaffold` generate JSON controllers without views, `natra new` serves JSON at `GET /` and no longer creates `app/views/layout.erb`, `app/views/welcome.erb` or `public/`, and `--views` on `controller` now defaults to off. Pass `--views` to get HTML.
+
+### Added
+
+- `natra controller` and `natra scaffold` generate JSON CRUD routes backed by the model: `GET /posts` and `GET /posts/:id` (200), `POST /posts` (201), `PATCH /posts/:id` (200) and `DELETE /posts/:id` (204). They read the JSON request body and accept only the scaffold's fields, the fields passed to `natra controller`, or else the model's columns other than `id` and the timestamps. `natra controller` without a matching model generates a stub controller with a TODO.
+- The generated `ApplicationController` defaults to JSON and returns JSON errors: 404 for unknown routes and missing records, 422 with the validation errors for `ActiveRecord::RecordInvalid`, 400 for a malformed request body, and 500 with a generic message (the exception message is added in development only). It adds `json(object, status)` and `json_params` helpers.
+- `GET /health` returns `{"status":"ok","database":"ok"}`, or 503 with `"database":"unavailable"` when the database cannot be reached. The Dockerfile installs curl and adds a `HEALTHCHECK`, and `docker-compose.yml` health-checks `web` and `db` and starts `web` once the database is healthy.
+- `natra scaffold` writes `spec/requests/<plural>_spec.rb`, covering every route and its success and error statuses. `natra new` writes `spec/requests/application_spec.rb` for `/`, `/health` and unknown routes.
+- The generated `spec_helper.rb` loads the app once from `config.ru`, wraps each example in a database_cleaner-active_record transaction, and adds `json_body` and `json_request` helpers.
+- `natra new --views` generates the HTML layout, welcome page and `public/favicon.ico`, and serves the welcome page at `GET /`.
+- `natra scaffold` accepts `--views` and `--no-migration` and passes them to the controller and model generators.
+
+### Changed
+
+- The HTML controller generated with `--views` routes `DELETE /posts/:id` instead of `DELETE /posts/:id/delete`, and `PATCH` redirects to the record instead of the literal path `/posts/:id`.
+- Generated migrations write `create_table :posts, id: :uuid` without a space before the comma, and the generated RuboCop config skips `db/schema.rb`, so a freshly scaffolded app passes RuboCop.
+- The development Gemfile no longer pins `parallel` below 2, which was only needed for Ruby 3.2. parallel is now 2.3.0.
+- `natra new --redis` adds `gem 'redis', '~> 6.0'` (was `~> 5.0`). redis 6 talks RESP3 by default; the generated `config/redis.yml` and initializer work unchanged.
+- Generated apps pin `gem 'puma', '~> 8.0'` (was `>= 6.4`). The generated `config/puma.rb` is unchanged and runs on Puma 8.
+- Generated apps pin `gem 'pg', '~> 1.7'` (was `~> 1.5`) and `gem 'oj', '~> 3.17'` (was `~> 3.16`).
+
+### Removed
+
+- `capybara` from the generated Gemfile and spec helper. Generated apps test their endpoints with rack-test request specs, and `--views` adds no browser specs.
+- `seed-fu` from the generated Gemfile. `rake db:seed` from sinatra-activerecord loads the plain Ruby `db/seeds.rb`, which `bin/setup` runs after migrating.
+
 ## [2.0.0] - 2026-10-04
 
 Changes since 0.0.8.

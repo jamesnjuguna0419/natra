@@ -16,7 +16,7 @@ RSpec.describe Natra::CLI, 'help' do
   end
 
   it 'describes a single command' do
-    expect(run_cli('help', 'scaffold')).to include('scaffold NAME', 'Generate a model with its associated views')
+    expect(run_cli('help', 'scaffold')).to include('scaffold NAME', 'Generate a model with its JSON CRUD controller')
   end
 end
 

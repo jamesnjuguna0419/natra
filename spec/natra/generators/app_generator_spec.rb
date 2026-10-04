@@ -1,5 +1,7 @@
 # frozen_string_literal: true
 
+require 'yaml'
+
 RSpec.describe Natra::Generators::AppGenerator, 'natra new' do
   include_context 'in a temp dir'
   include_context 'with stubbed shell commands'
@@ -11,13 +13,20 @@ RSpec.describe Natra::Generators::AppGenerator, 'natra new' do
       config.ru Gemfile Rakefile README.md Dockerfile docker-compose.yml Guardfile secrets.env
       .gitignore .rspec .rubocop.yml bin/setup config/environment.rb config/database.yml config/puma.rb
       config/initializers/oj.rb
-      app/controllers/application_controller.rb app/views/layout.erb app/views/welcome.erb
-      app/models/.gitkeep db/seeds.rb lib/.keep public/favicon.ico spec/spec_helper.rb
-      spec/application_controller_spec.rb spec/support/.keep
+      app/controllers/application_controller.rb
+      app/models/.gitkeep db/seeds.rb lib/.keep spec/spec_helper.rb
+      spec/requests/application_spec.rb spec/support/.keep
     ]
     expect(expected.reject { |file| File.file?(File.join('my-blog', file)) }).to be_empty
     expect(%w[app/services config/initializers db/migrate].map { |dir| File.directory?("my-blog/#{dir}") })
       .to all(be true)
+  end
+
+  it 'creates no views or public directory by default' do
+    run_cli('new', 'blog')
+
+    expect(File).not_to exist('blog/app/views')
+    expect(File).not_to exist('blog/public')
   end
 
   it 'does not create the optional redis and rvm files by default' do
@@ -34,12 +43,6 @@ RSpec.describe Natra::Generators::AppGenerator, 'rendered templates' do
 
   before { run_cli('new', 'My-Blog') }
 
-  it 'uses the camel cased app name in the layout and keeps the yield tag' do
-    layout = read('my-blog/app/views/layout.erb')
-    expect(layout).to include('<title>MyBlog</title>', '<strong>MyBlog</strong>', '<%= yield %>')
-    expect(layout).to include("&copy; #{Time.now.year}")
-  end
-
   it 'names the databases after the app' do
     secrets = read('my-blog/secrets.env')
     expect(secrets).to include('DEV_DATABASE=development_my_blog', 'TEST_DATABASE=test_my_blog')
@@ -48,8 +51,9 @@ RSpec.describe Natra::Generators::AppGenerator, 'rendered templates' do
 
   it 'targets Ruby 3.3 with current gems and no coveralls or tux' do
     gemfile = read('my-blog/Gemfile')
-    expect(gemfile).to include("ruby '~> 3.3'", "gem 'pg', '~> 1.5'", "gem 'sinatra', '~> 4.1'", "gem 'simplecov'")
-    expect(gemfile).not_to match(/coveralls|tux/)
+    expect(gemfile).to include("ruby '~> 3.3'", "gem 'pg', '~> 1.7'", "gem 'sinatra', '~> 4.1'", "gem 'simplecov'")
+    expect(gemfile).to include("gem 'puma', '~> 8.0'", "gem 'oj', '~> 3.17'")
+    expect(gemfile).not_to match(/coveralls|tux|capybara|seed-fu/)
     expect(read('my-blog/Dockerfile')).to start_with('FROM ruby:3.3-slim').and include('libpq-dev')
   end
 
@@ -69,8 +73,44 @@ RSpec.describe Natra::Generators::AppGenerator, 'rendered templates' do
     expect(read('my-blog/Gemfile')).to include("gem 'activerecord', '~> 8.1'")
   end
 
+  it 'writes a plain db/seeds.rb for rake db:seed' do
+    expect(read('my-blog/db/seeds.rb')).to eq("# Seed data, loaded by rake db:seed.\n")
+    expect(read('my-blog/bin/setup')).to include('bundle exec rake db:seed')
+  end
+
   it 'titles the README with the app name' do
     expect(read('my-blog/README.md')).to start_with("# my_blog service\n")
+  end
+
+  it 'writes a JSON application controller with a health check named after the app' do
+    controller = read('my-blog/app/controllers/application_controller.rb')
+    expect(controller).to include('set :default_content_type, :json', "json(name: 'MyBlog', status: 'ok')")
+    expect(controller).to include("get '/health' do", "connection.select_value('SELECT 1')")
+    expect(controller).to include('error ActiveRecord::RecordNotFound', 'error ActiveRecord::RecordInvalid',
+                                  'error Sinatra::BadRequest', 'def json(object, code = 200)', 'def json_params')
+    expect(controller).not_to include('erb ')
+  end
+
+  it 'checks the health endpoint from Docker and waits for a healthy database' do
+    expect(read('my-blog/Dockerfile')).to include('curl', 'HEALTHCHECK', 'http://localhost:${PORT:-9292}/health')
+    compose = YAML.safe_load(read('my-blog/docker-compose.yml'))
+    expect(compose.dig('services', 'web', 'depends_on')).to eq('db' => { 'condition' => 'service_healthy' })
+    expect(compose.dig('services', 'web', 'healthcheck', 'test')).to include('http://localhost:9292/health')
+    expect(compose.dig('services', 'db', 'healthcheck', 'test').last).to include('pg_isready')
+  end
+
+  it 'sets up request specs against config.ru with transactional database cleaning' do
+    helper = read('my-blog/spec/spec_helper.rb')
+    expect(helper).to include("require 'database_cleaner/active_record'",
+                              "Rack::Builder.parse_file(File.expand_path('../config.ru', __dir__))")
+    expect(helper).to include('DatabaseCleaner.strategy = :transaction', 'DatabaseCleaner.cleaning { example.run }')
+    expect(helper).to include('def json_body', 'def json_request(method, path, payload = {})')
+    expect(helper).not_to include('Capybara')
+  end
+
+  it 'specs the root and health endpoints' do
+    spec = read('my-blog/spec/requests/application_spec.rb')
+    expect(spec).to include("get '/health'", "'name' => 'MyBlog'", 'eq(503)')
   end
 end
 
@@ -131,7 +171,21 @@ RSpec.describe Natra::Generators::AppGenerator, 'optional files' do
 
     expect(read('blog/config/redis.yml')).to eq(read(File.join(described_class.source_root, 'config/redis.yml')))
     expect(read('blog/config/initializers/redis.rb')).to include('REDIS = Redis.new')
-    expect(read('blog/Gemfile')).to include("gem 'redis', '~> 5.0'\n")
+    expect(read('blog/Gemfile')).to include("gem 'redis', '~> 6.0'\n")
+  end
+
+  it 'adds the HTML layout, welcome page and public directory with --views' do
+    run_cli('new', 'My-Blog', '--views')
+
+    layout = read('my-blog/app/views/layout.erb')
+    expect(layout).to include('<title>MyBlog</title>', '<strong>MyBlog</strong>', '<%= yield %>')
+    expect(layout).to include("&copy; #{Time.now.year}")
+    expect(read('my-blog/app/views/welcome.erb')).to include('Welcome to the Sinatra Template!')
+    expect(File).to exist('my-blog/public/favicon.ico')
+    controller = read('my-blog/app/controllers/application_controller.rb')
+    expect(controller).to include("set :views, 'app/views'", 'erb :welcome')
+    expect(controller).not_to include("json(name: 'MyBlog'")
+    expect(read('my-blog/spec/requests/application_spec.rb')).to include("include('text/html')")
   end
 
   it 'writes rvm files with --rvm and skips bundling even with --bundle' do
