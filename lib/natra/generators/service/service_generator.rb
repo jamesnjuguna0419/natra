@@ -23,7 +23,7 @@ module Natra
       end
 
       def create_service
-        template 'template/service.rb.erb', File.join('app/service', "#{file_name}.rb")
+        template 'template/service.rb.erb', File.join('app/services', "#{file_name}.rb")
         insert_into_file 'config.ru', "use #{class_name}\n", after: "run ApplicationController\n"
       end
     end
