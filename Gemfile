@@ -10,7 +10,7 @@ group :development do
   gem 'guard'
   gem 'guard-rspec', require: false
   gem 'guard-rubocop'
-  gem 'parallel', '< 2'
+  gem 'parallel', '< 3'
   gem 'pry'
   gem 'rake'
   gem 'rspec'
