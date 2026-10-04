@@ -1,8 +1,7 @@
 # Natra
-[![Coverage Status](https://coveralls.io/repos/github/thirunjuguna/natra/badge.svg?branch=master)](https://coveralls.io/github/thirunjuguna/natra?branch=master)
-[![Build Status](https://travis-ci.com/thirunjuguna/natra.svg?branch=master)](https://travis-ci.com/thirunjuguna/natra) 
-[![Maintainability](https://api.codeclimate.com/v1/badges/e76bbd27a1c4cb8911ae/maintainability)](https://codeclimate.com/github/thirunjuguna/natra/maintainability)
-[![Codacy Badge](https://api.codacy.com/project/badge/Grade/450f5da9d33d4adca897563ec759c1b2)](https://www.codacy.com/app/thirunjuguna/natra?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=thirunjuguna/natra&amp;utm_campaign=Badge_Grade)
+[![CI](https://github.com/jamesnjuguna0419/natra/actions/workflows/ci.yml/badge.svg)](https://github.com/jamesnjuguna0419/natra/actions/workflows/ci.yml)
+[![Gem Version](https://img.shields.io/gem/v/natra.svg)](https://rubygems.org/gems/natra)
+[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE.txt)
 
 ## Installation
 
